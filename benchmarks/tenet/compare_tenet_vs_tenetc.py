@@ -35,23 +35,29 @@ tenetc = dict(read_rows(sys.argv[2], "tenetc"))
 with open(sys.argv[3], "w") as out:
     out.write(
         "chi\tmaster_seconds\ttenetc_seconds\tratio_tenetc_over_master\t"
-        "speedup_master_over_tenetc\tmaster_err\ttenetc_err\n"
+        "speedup_master_over_tenetc\tmaster_err\ttenetc_err\tmaster_status\ttenetc_status\n"
     )
-    for chi in sorted(set(master) & set(tenetc)):
-        m = master[chi]
+    for chi in sorted(tenetc):
         t = tenetc[chi]
-        master_seconds = float(m["median_total_seconds"])
         tenetc_seconds = float(t["median_total_seconds"])
-        ratio = tenetc_seconds / master_seconds
-        out.write(
-            "%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9e\t%.9e\n"
-            % (
-                chi,
-                master_seconds,
-                tenetc_seconds,
-                ratio,
-                1.0 / ratio,
-                float(m["err"]),
-                float(t["err"]),
+        if chi in master:
+            m = master[chi]
+            master_seconds = float(m["median_total_seconds"])
+            ratio = tenetc_seconds / master_seconds
+            out.write(
+                "%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9e\t%.9e\tmeasured\tmeasured\n"
+                % (
+                    chi,
+                    master_seconds,
+                    tenetc_seconds,
+                    ratio,
+                    1.0 / ratio,
+                    float(m["err"]),
+                    float(t["err"]),
+                )
             )
-        )
+        else:
+            out.write(
+                "%d\t\t%.9f\t\t\t\t%.9e\ttimeout\tmeasured\n"
+                % (chi, tenetc_seconds, float(t["err"]))
+            )

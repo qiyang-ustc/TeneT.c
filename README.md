@@ -1,8 +1,9 @@
 # TeneT.c
 
-Preview / benchmark artifact for native accelerated experiments on selected
-TeneT-style tensor-network workloads. This is not a complete replacement for
-TeneT.jl. The Julia package lives in `TeneTC/`; install with:
+TeneT.c is a benchmark-first native backend for selected 2D Ising
+TeneT-style tensor-network workloads. It depends on KrylovKit.c for the native
+Krylov backend. This repository is not a complete replacement for TeneT.jl and
+should not be cited as the scientific source.
 
 ```julia
 using Pkg
@@ -13,40 +14,83 @@ Pkg.add(url="https://github.com/qiyang-ustc/TeneT.c", subdir="TeneTC")
 
 TeneT.jl is the scientific and API inspiration for this work. We are grateful to
 Xingyu Zhang and the TeneT.jl contributors for the original implementation.
-This repository should be read as a specialized native backend and benchmark
-suite, not as a replacement for TeneT.jl. Any compatibility patch used for a
-reference baseline is documented as an ecosystem-version adapter, not as a
-criticism of the original project.
-
-If this code is useful in your work, please cite and acknowledge the original
-TeneT.jl work by Xingyu Zhang and contributors, and cite and acknowledge
+Please cite and acknowledge TeneT.jl by Xingyu Zhang and contributors when this
+backend is useful in scientific work. Please also cite and acknowledge
 KrylovKit.jl by Jutho Haegeman and contributors for the Krylov solver design.
-Please do not cite TeneT.c or KrylovKit.c as the scientific source; these
-repositories are engineering backends and benchmark artifacts.
 
-## Layout
+Do not cite TeneT.c or KrylovKit.c as the scientific source; these repositories
+are engineering backends and benchmark artifacts.
 
-- `TeneTC/`: release-facing Julia wrapper package.
-- `FastTeneT/`: 2D Ising boundary implementation and native integration layer.
-- `TenetNative/`: native C++/CUDA implementation used by FastTeneT.
-- `benchmarks/`: TeneT.jl master comparison, TeneT.c benchmark scripts,
-  jobfiles, plotting scripts, and artifact conventions.
+## What Is Measured
+
+- 2D classical Ising boundary VUMPS.
+- TeneT.c native CPU/CUDA `Float64` path.
+- TeneT.jl `master` baseline at a pinned commit with a documented CUDA
+  compatibility patch.
+- Native runtime scaling at larger `chi` even when the TeneT.jl baseline times
+  out.
 
 `TeneTC` depends on `KrylovKitC` from
 `https://github.com/qiyang-ustc/KrylovKit.c`.
 
-## Preliminary Performance Snapshot
+## Correctness Before Speed
 
-The figures below are generated from compact summaries in `benchmarks/results/`.
-`benchmarks/results/metadata.toml` records the source run for each artifact.
-The public-main H100 native run completed for `chi=64,128,256`; the TeneT.jl
-master baseline completed for `chi=64` and timed out for `chi=128,256`, so no
-large-size speedup headline is made. Small `chi=8` and `chi=16` runs are smoke
-tests only.
+The release gate includes 2D Ising tensor construction, Onsager exact
+references, CPU smoke tests, CUDA smoke tests when CUDA is available, native
+path versus reference path parity, and checks that production defaults remain
+real `Float64`.
 
-![TeneT.c native speedup benchmark](TeneTC/docs/figures/tenetc_speedup.svg)
+```sh
+TENETC_RUN_RELEASE_GATE=1 julia --project=TeneTC -e 'using Pkg; Pkg.test()'
+```
 
-![TeneT.c runtime scaling benchmark](TeneTC/docs/figures/tenetc_scaling.svg)
+Correctness artifacts report the VUMPS error returned by the solver and keep
+the same `beta`, `tol`, `maxiter`, and seed across TeneT.jl and TeneT.c
+comparisons.
 
-See `TeneTC/README.md` for the full tables, run IDs, tolerances, and
-reproduction commands.
+## Baseline Policy
+
+The reference baseline is TeneT.jl `master` at pinned commit
+`b9ac7919a96e930639935c9370ae568139bc8747` with
+`tenet_master_cuda_compat.patch`. The patch is an ecosystem-version adapter for
+current CUDA/Julia packages, not a criticism of the original project.
+
+Speedup is shown only for `chi` values where the TeneT.jl master baseline
+completed. Timeout rows are reported separately and are not converted into
+speedup claims.
+
+## Performance Evidence
+
+All figures are generated from committed TSV artifacts:
+
+```sh
+python3 benchmarks/plots/plot_release_figures.py
+```
+
+Current public artifacts are partial. The expanded release suite targets 8
+native chi values and 5 required master-baseline chi values before any stronger
+performance claim.
+
+![Completed baseline speedup](TeneTC/docs/figures/tenetc_completed_speedup.svg)
+
+![Native runtime scaling](TeneTC/docs/figures/tenetc_native_scaling.svg)
+
+![Native correctness trend](TeneTC/docs/figures/tenetc_error_vs_chi.svg)
+
+Detailed tables, run IDs, limitations, and reproduction commands are in
+`TeneTC/README.md`.
+
+## Expanded Release Sweep
+
+```sh
+bash benchmarks/run_release_suite.sh
+```
+
+Planned matrix:
+
+- TeneT.c H100 native: `chi=32,48,64,96,128,192,256,384`, warmup 2, repeat 9.
+- TeneT.jl master H100 baseline: required `chi=32,48,64,96,128`, warmup 2,
+  repeat 9; larger baselines are optional and recorded as timeout/not measured
+  if they exceed the configured wall time.
+
+No speedup claim is made for missing, timed-out, or smoke-test rows.

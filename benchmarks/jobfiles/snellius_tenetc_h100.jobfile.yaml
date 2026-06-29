@@ -57,9 +57,9 @@ params:
   master_repo: { type: str, default: "/home/qyang/source/original_tenet_master_b9ac791_cuda" }
   julia: { type: str, default: "/gpfs/home1/qyang/.juliaup/bin/julia" }
   cuda_module: { type: str, default: "2025 CUDA/12.8.0" }
-  chis: { type: str, default: "64,128,256" }
+  chis: { type: str, default: "32,48,64,96,128,192,256,384" }
   warmup: { type: int, default: 2 }
-  repeats: { type: int, default: 7 }
+  repeats: { type: int, default: 9 }
   tol: { type: str, default: "1e-10" }
   maxiter: { type: int, default: 20 }
   krylovdim: { type: int, default: 30 }

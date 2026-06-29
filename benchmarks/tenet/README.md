@@ -10,8 +10,8 @@ TeneT.jl.
 
 Default release sizes:
 
-- CPU: `TENET_BENCH_CHIS=32,64,128`
-- H100: `TENET_BENCH_CHIS=64,128,256`
+- TeneT.c H100 native: `TENET_BENCH_CHIS=32,48,64,96,128,192,256,384`
+- TeneT.jl master H100 baseline: one `chi` per job for `32,48,64,96,128`
 
 Run examples:
 
