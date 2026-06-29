@@ -1,7 +1,34 @@
-generated_at_utc = "2026-06-29T21:28:14.561864+00:00"
-source_kind = "pre_public_measured_subset"
+generated_at_utc = "2026-06-29T22:32:00Z"
+source_kind = "public_main_partial"
 
-[tenetc_h100]
-run_id = "run-4ee25b9f6f9b"
+[tenetc_h100_comparison]
+run_id = "run-54ccea21ccc0"
+source_kind = "public_main"
 summary = "benchmarks/results/tenetc_h100.tsv"
-host_env = "benchmarks/results/tenetc_h100_host_env.txt"
+host_env = "benchmarks/results/tenetc_master_h100_chi64_host_env.txt"
+note = "Only chi64 has a measured public-main TeneT.jl master baseline. Larger master baselines timed out and are not used for speedup claims."
+
+[tenetc_native_h100]
+run_id = "run-e51b2476d875"
+source_kind = "public_main"
+summary = "benchmarks/results/tenetc_native_h100.tsv"
+host_env = "benchmarks/results/tenetc_native_h100_host_env.txt"
+
+[tenetc_master_h100_chi64]
+run_id = "run-54ccea21ccc0"
+source_kind = "public_main"
+summary = "benchmarks/results/tenetc_h100.tsv"
+host_env = "benchmarks/results/tenetc_master_h100_chi64_host_env.txt"
+status = "measured"
+
+[tenetc_master_h100_chi128]
+run_id = "run-0f6719a9e857"
+source_kind = "public_main"
+host_env = "benchmarks/results/tenetc_master_h100_chi128_host_env.txt"
+status = "timeout"
+
+[tenetc_master_h100_chi256]
+run_id = "run-0a50d47f2806"
+source_kind = "public_main"
+host_env = "benchmarks/results/tenetc_master_h100_chi256_host_env.txt"
+status = "timeout"

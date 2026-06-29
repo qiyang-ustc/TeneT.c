@@ -53,18 +53,25 @@ r = run_boundary(critical_beta(); chi=128, maxiter=20, maxiter_ad=0, arraytype=C
 ## Preliminary Performance
 
 README figures are generated from compact summaries in `benchmarks/results/`,
-not edited by hand. Current summaries are marked `pre_public_measured_subset` in
-`benchmarks/results/metadata.toml`; a public-main rerun should replace them
-before any formal release claim.
+not edited by hand. `benchmarks/results/metadata.toml` records the source run
+for each artifact. The public-main H100 native run completed for
+`chi=64,128,256`; the TeneT.jl master baseline completed for `chi=64` and timed
+out for `chi=128,256`, so no large-size speedup headline is made.
 
-H100 run, Snellius `gpu_h100`; TeneT.jl master baseline from
-`run-4ee25b9f6f9b`, source summary `benchmarks/results/tenetc_h100.tsv`:
+H100 public-main runs on Snellius `gpu_h100`; TeneT.c native run
+`run-e51b2476d875`, TeneT.jl master `chi=64` baseline
+`run-54ccea21ccc0`, source summaries `benchmarks/results/tenetc_h100.tsv` and
+`benchmarks/results/tenetc_native_h100.tsv`:
 
-| chi | TeneT.jl master median (s) | TeneT.c median (s) | speedup | master error | TeneT.c error |
-| ---: | ---: | ---: | ---: | ---: | ---: |
-| 64 | 40.187639 | 2.196951 | 18.29x | 1.31e-5 | 1.33e-5 |
-| 128 | 346.016757 | 2.916907 | 118.62x | 6.32e-6 | 6.68e-6 |
-| 256 | 426.729775 | 4.331296 | 98.52x | 3.65e-6 | 3.63e-6 |
+| chi | TeneT.jl master median (s) | TeneT.c median (s) | speedup | master error | TeneT.c error | status |
+| ---: | ---: | ---: | ---: | ---: | ---: | :--- |
+| 64 | 40.995462 | 2.188001 | 18.74x | 1.53e-5 | 1.33e-5 | measured |
+| 128 | not measured | 2.948597 | n/a | n/a | 6.68e-6 | master baseline timeout |
+| 256 | not measured | 4.467242 | n/a | n/a | 3.67e-6 | master baseline timeout |
+
+The `chi=128` and `chi=256` master baseline jobs timed out at the configured
+wall time, so those rows report TeneT.c native-only scaling and do not make a
+speedup claim.
 
 ![TeneT.c native speedup benchmark](docs/figures/tenetc_speedup.svg)
 
@@ -74,7 +81,7 @@ Generate replacement figures from release artifacts:
 
 ```sh
 python3 benchmarks/plots/plot_speedup.py benchmarks/results/tenetc_h100.tsv TeneTC/docs/figures/tenetc_speedup.svg
-python3 benchmarks/plots/plot_scaling.py benchmarks/results/tenetc_h100.tsv TeneTC/docs/figures/tenetc_scaling.svg
+python3 benchmarks/plots/plot_scaling.py benchmarks/results/tenetc_native_h100.tsv TeneTC/docs/figures/tenetc_scaling.svg
 ```
 
 ## Benchmark Rules

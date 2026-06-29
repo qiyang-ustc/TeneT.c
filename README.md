@@ -38,10 +38,11 @@ repositories are engineering backends and benchmark artifacts.
 ## Preliminary Performance Snapshot
 
 The figures below are generated from compact summaries in `benchmarks/results/`.
-Current summaries are marked `pre_public_measured_subset` in
-`benchmarks/results/metadata.toml`; a public-main rerun should replace them
-before any formal release claim. Small `chi=8` and `chi=16` runs are smoke tests
-only.
+`benchmarks/results/metadata.toml` records the source run for each artifact.
+The public-main H100 native run completed for `chi=64,128,256`; the TeneT.jl
+master baseline completed for `chi=64` and timed out for `chi=128,256`, so no
+large-size speedup headline is made. Small `chi=8` and `chi=16` runs are smoke
+tests only.
 
 ![TeneT.c native speedup benchmark](TeneTC/docs/figures/tenetc_speedup.svg)
 

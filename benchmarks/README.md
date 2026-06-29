@@ -15,5 +15,5 @@ Every run must preserve raw CSV/TSV data, host metadata, package commits, thread
 counts, BLAS/CUDA versions, tolerance, Krylov dimension, max iteration count,
 seed, residuals, and timing quantiles.
 
-This branch keeps local unregistered Julia dependency wiring in the benchmark
-projects. The release branch omits those `[sources]` entries.
+Checked-in summaries under `benchmarks/results/` are compact release artifacts.
+Full jobctl run directories and Julia manifests are not committed.

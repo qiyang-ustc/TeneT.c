@@ -1,0 +1,12 @@
+name=release-tenetc-master-snellius-h100-onechi
+repo=/home/qyang/source/TeneT.c
+master_repo=/home/qyang/source/original_tenet_master_b9ac791_cuda
+date_utc=2026-06-29T21:38:23Z
+chi=128
+cuda_module=2025 CUDA/12.8.0
+julia version 1.11.4
+/sw/arch/RHEL9/EB_production/2025/software/CUDA/12.8.0/bin/nvcc
+nvcc: NVIDIA (R) Cuda compiler driver
+GPU 0: NVIDIA H100 (UUID: GPU-3b9d9e0b-1a13-7de9-7074-3909849c442f)
+1ab05dc5af9ff82d192a468c8f51c584dd7d5e62
+?? TeneTC/Manifest.toml

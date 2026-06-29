@@ -1,4 +1,2 @@
-chi	master_seconds	tenetc_seconds	ratio_tenetc_over_master	speedup_master_over_tenetc	master_err	tenetc_err
-64	40.187638549	2.196950680	0.054667325	18.292462783	1.309147318e-05	1.333142614e-05
-128	346.016757411	2.916906825	0.008429958	118.624549281	6.322944257e-06	6.676831840e-06
-256	426.729775061	4.331296299	0.010149974	98.522415832	3.652231656e-06	3.628334703e-06
+chi	master_seconds	tenetc_seconds	ratio_tenetc_over_master	speedup_master_over_tenetc	master_err	tenetc_err	master_status	tenetc_status
+64	40.995461515	2.188001322	0.053371794	18.736488458	1.527726930e-05	1.333142614e-05	measured	measured

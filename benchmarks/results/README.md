@@ -6,5 +6,7 @@ Raw jobctl artifacts should normally stay in the job run directory or under
 `/tmp`. Commit only compact CSV/TSV summaries, host metadata, and generated
 figures needed for README claims.
 
-Current summaries may be marked `pre_public_measured_subset` in `metadata.toml`.
-Replace them with `public_main` summaries before making a formal release claim.
+`metadata.toml` records the source and status for each committed artifact,
+including timeout/not-measured baselines. Do not promote a row to a headline
+claim unless the corresponding raw summary, host metadata, and source run ID are
+present here.

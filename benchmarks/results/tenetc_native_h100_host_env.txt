@@ -1,0 +1,10 @@
+name=release-tenetc-native-snellius-h100
+repo=/home/qyang/source/TeneT.c
+date_utc=2026-06-29T21:37:32Z
+chis=64,128,256
+cuda_module=2025 CUDA/12.8.0
+julia version 1.11.4
+/sw/arch/RHEL9/EB_production/2025/software/CUDA/12.8.0/bin/nvcc
+nvcc: NVIDIA (R) Cuda compiler driver
+GPU 0: NVIDIA H100 (UUID: GPU-941092ca-1152-07a6-de30-8dfb67bf8d68)
+1ab05dc5af9ff82d192a468c8f51c584dd7d5e62
