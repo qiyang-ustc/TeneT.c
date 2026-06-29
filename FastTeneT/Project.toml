@@ -1,0 +1,26 @@
+name = "FastTeneT"
+uuid = "8d59028a-6a78-4be7-b16a-d117f7c0be4a"
+authors = ["Yang Qi"]
+version = "0.1.0"
+
+[deps]
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+TenetNative = "b9be7e60-30e7-4f45-bcb9-e1b624ff479c"
+Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+TensorOperations = "6aa20fa7-93e2-5fca-9bc0-fbd0db3c71a2"
+VectorInterface = "409d34a3-91d5-4945-b6ec-7529ddf182d8"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+cuTENSOR = "011b41b2-24ef-40a8-b3eb-fa098493e9e1"
+
+[sources]
+TenetNative = { path = "../TenetNative" }
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

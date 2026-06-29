@@ -1,0 +1,67 @@
+diff --git a/src/patch.jl b/src/patch.jl
+index 0000000..0000001 100644
+--- a/src/patch.jl
++++ b/src/patch.jl
+@@
+ using CUDA
+ using LinearAlgebra
++import KrylovKit
+ import LinearAlgebra: mul!
+@@
+ LinearAlgebra.mul!(y::CuArray, x::CuArray, alpha::T) where {T <: CublasFloat} = (y .= alpha .* x)
+ LinearAlgebra.axpy!(alpha::Complex{T}, x::CuArray{T}, y::CuArray{Complex{T}}) where {T <: CublasReal} = (y .+= alpha .* x)
++
++function LinearAlgebra.norm(x::CuArray{ComplexF64,N}, p::Real=2) where {N}
++    p == 2 || throw(ArgumentError("patched TeneT CuArray ComplexF64 norm only supports p=2"))
++    return sqrt(real(sum(abs2, x)))
++end
++
++function LinearAlgebra.norm(x::CuArray{ComplexF32,N}, p::Real=2) where {N}
++    p == 2 || throw(ArgumentError("patched TeneT CuArray ComplexF32 norm only supports p=2"))
++    return sqrt(real(sum(abs2, x)))
++end
++
++LinearAlgebra.norm2(x::CuArray{ComplexF64,N}) where {N} = sqrt(real(sum(abs2, x)))
++LinearAlgebra.norm2(x::CuArray{ComplexF32,N}) where {N} = sqrt(real(sum(abs2, x)))
++
++function KrylovKit.unproject!(
++    y::CuArray,
++    b::KrylovKit.OrthonormalBasis{<:CuArray},
++    x::AbstractVector,
++    alpha::Number = true,
++    beta::Number = false,
++    r = Base.OneTo(length(b)),
++)
++    length(x) == length(r) || throw(DimensionMismatch())
++    if beta == 0
++        fill!(y, zero(eltype(y)))
++    elseif beta != 1
++        y .*= beta
++    end
++    @inbounds for (i, ri) in enumerate(r)
++        y .+= (alpha * x[i]) .* b[ri]
++    end
++    return y
++end
++
++function KrylovKit.rank1update!(
++    b::KrylovKit.OrthonormalBasis{<:CuArray},
++    y::CuArray,
++    x::AbstractVector,
++    alpha::Number = true,
++    beta::Number = true,
++    r = Base.OneTo(length(b)),
++)
++    length(x) == length(r) || throw(DimensionMismatch())
++    @inbounds for (i, ri) in enumerate(r)
++        coeff = alpha * conj(x[i])
++        if beta == 1
++            b[ri] .+= coeff .* y
++        elseif beta == 0
++            b[ri] .= coeff .* y
++        else
++            b[ri] .= beta .* b[ri] .+ coeff .* y
++        end
++    end
++    return b
++end

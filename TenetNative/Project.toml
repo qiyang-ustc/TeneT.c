@@ -1,0 +1,14 @@
+name = "TenetNative"
+uuid = "b9be7e60-30e7-4f45-bcb9-e1b624ff479c"
+version = "0.1.0"
+
+[deps]
+Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
+[extras]
+KrylovKit = "0b1a1467-8014-51b9-945f-bf0ae24f4b77"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["KrylovKit", "Test"]

@@ -1,0 +1,22 @@
+name = "TeneTC"
+uuid = "094e823b-52d3-4ba4-80ca-880550682877"
+authors = ["Yang Qi"]
+version = "0.1.0"
+
+[deps]
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+FastTeneT = "8d59028a-6a78-4be7-b16a-d117f7c0be4a"
+KrylovKitC = "765ecd17-492c-430c-b274-be3c1edb6e6a"
+
+[compat]
+julia = "1.11"
+
+[sources]
+FastTeneT = { path = "../FastTeneT" }
+KrylovKitC = { url = "https://github.com/qiyang-ustc/KrylovKit.c", subdir = "KrylovKitC" }
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
