@@ -92,3 +92,15 @@ Formal benchmark claims must use large workloads:
 - H100: `chi=64,128,256`, warmup 2, repeat 7.
 
 Small `chi=8` and `chi=16` runs are smoke tests and correctness checks only.
+
+## Test Gates
+
+The default package test is intentionally light. Run the release gate with:
+
+```sh
+TENETC_RUN_RELEASE_GATE=1 julia --project=TeneTC -e 'using Pkg; Pkg.test()'
+```
+
+That gate includes the FastTeneT 2D Ising tensor/reference tests, native
+full-step parity, a small VUMPS boundary smoke, and Onsager exact-reference
+checks. Set `FASTTENET_RUN_ALIGNMENT=1` for the heavier Onsager alignment sweep.
