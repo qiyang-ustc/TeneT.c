@@ -53,7 +53,7 @@ command: |
   find "$RUN_DIR/results" -type f -print | sort > "$RUN_DIR/artifact_files.txt"'
 
 params:
-  repo: { type: str, default: "/home/qyang/source/LRIsing" }
+  repo: { type: str, default: "/home/qyang/source/TeneT.c" }
   master_repo: { type: str, default: "/home/qyang/source/original_tenet_master_b9ac791_cuda" }
   julia: { type: str, default: "/gpfs/home1/qyang/.juliaup/bin/julia" }
   cuda_module: { type: str, default: "2025 CUDA/12.8.0" }

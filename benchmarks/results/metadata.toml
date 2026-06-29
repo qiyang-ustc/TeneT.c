@@ -1,0 +1,7 @@
+generated_at_utc = "2026-06-29T21:28:14.561864+00:00"
+source_kind = "pre_public_measured_subset"
+
+[tenetc_h100]
+run_id = "run-4ee25b9f6f9b"
+summary = "benchmarks/results/tenetc_h100.tsv"
+host_env = "benchmarks/results/tenetc_h100_host_env.txt"

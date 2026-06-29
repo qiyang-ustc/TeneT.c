@@ -1,7 +1,8 @@
 # TeneT.c
 
-Native accelerated backend experiments for selected TeneT-style tensor-network
-workloads. The Julia package lives in `TeneTC/`; install with:
+Preview / benchmark artifact for native accelerated experiments on selected
+TeneT-style tensor-network workloads. This is not a complete replacement for
+TeneT.jl. The Julia package lives in `TeneTC/`; install with:
 
 ```julia
 using Pkg
@@ -34,10 +35,13 @@ repositories are engineering backends and benchmark artifacts.
 `TeneTC` depends on `KrylovKitC` from
 `https://github.com/qiyang-ustc/KrylovKit.c`.
 
-## Performance Snapshot
+## Preliminary Performance Snapshot
 
-The headline figures are generated from measured benchmark artifacts and are
-kept in the package README. Small `chi=8` and `chi=16` runs are smoke tests only.
+The figures below are generated from compact summaries in `benchmarks/results/`.
+Current summaries are marked `pre_public_measured_subset` in
+`benchmarks/results/metadata.toml`; a public-main rerun should replace them
+before any formal release claim. Small `chi=8` and `chi=16` runs are smoke tests
+only.
 
 ![TeneT.c native speedup benchmark](TeneTC/docs/figures/tenetc_speedup.svg)
 

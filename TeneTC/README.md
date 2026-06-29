@@ -1,7 +1,8 @@
 # TeneT.c
 
-TeneT.c is a native accelerated backend for selected TeneT-style tensor-network
-workloads. The Julia module name is `TeneTC`.
+TeneT.c is a preview / benchmark artifact for native accelerated experiments on
+selected TeneT-style tensor-network workloads. It is not a complete replacement
+for TeneT.jl. The Julia module name is `TeneTC`.
 
 ## Acknowledgement
 
@@ -20,7 +21,7 @@ The release benchmarks compare against a pinned TeneT.jl `master` commit. Any
 CUDA compatibility patch used for the reference baseline is documented as an
 ecosystem-version adapter, not as a criticism of the original project.
 
-## Release Scope
+## Preview Scope
 
 - 2D classical Ising boundary VUMPS.
 - CPU `Float64` and CUDA `CuArray{Float64}` native fast path.
@@ -49,18 +50,21 @@ CUDA.allowscalar(false)
 r = run_boundary(critical_beta(); chi=128, maxiter=20, maxiter_ad=0, arraytype=CuArray)
 ```
 
-## Performance
+## Preliminary Performance
 
-Release README figures are generated from raw benchmark artifacts, not edited by
-hand. The current checked-in TeneT.c panels use the completed H100 `chi=64`
-measurement while the full `chi=64,128,256` release run is still in progress.
+README figures are generated from compact summaries in `benchmarks/results/`,
+not edited by hand. Current summaries are marked `pre_public_measured_subset` in
+`benchmarks/results/metadata.toml`; a public-main rerun should replace them
+before any formal release claim.
 
 H100 run, Snellius `gpu_h100`; TeneT.jl master baseline from
-`run-4ee25b9f6f9b`, TeneT.c native measurement from `run-3a97bb5d243a`:
+`run-4ee25b9f6f9b`, source summary `benchmarks/results/tenetc_h100.tsv`:
 
 | chi | TeneT.jl master median (s) | TeneT.c median (s) | speedup | master error | TeneT.c error |
 | ---: | ---: | ---: | ---: | ---: | ---: |
-| 64 | 40.187639 | 2.192884 | 18.33x | 1.31e-5 | 1.33e-5 |
+| 64 | 40.187639 | 2.196951 | 18.29x | 1.31e-5 | 1.33e-5 |
+| 128 | 346.016757 | 2.916907 | 118.62x | 6.32e-6 | 6.68e-6 |
+| 256 | 426.729775 | 4.331296 | 98.52x | 3.65e-6 | 3.63e-6 |
 
 ![TeneT.c native speedup benchmark](docs/figures/tenetc_speedup.svg)
 
@@ -69,13 +73,13 @@ H100 run, Snellius `gpu_h100`; TeneT.jl master baseline from
 Generate replacement figures from release artifacts:
 
 ```sh
-python3 benchmarks/plots/plot_speedup.py results/comparison.tsv docs/figures/tenetc_speedup.svg
-python3 benchmarks/plots/plot_scaling.py results/comparison.tsv docs/figures/tenetc_scaling.svg
+python3 benchmarks/plots/plot_speedup.py benchmarks/results/tenetc_h100.tsv TeneTC/docs/figures/tenetc_speedup.svg
+python3 benchmarks/plots/plot_scaling.py benchmarks/results/tenetc_h100.tsv TeneTC/docs/figures/tenetc_scaling.svg
 ```
 
 ## Benchmark Rules
 
-Headline benchmark claims must use large workloads:
+Formal benchmark claims must use large workloads:
 
 - CPU: `chi=32,64,128`, warmup 2, repeat 7.
 - H100: `chi=64,128,256`, warmup 2, repeat 7.

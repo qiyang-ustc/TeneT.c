@@ -1,8 +1,10 @@
 # Benchmark Results
 
-This directory is intentionally empty in source control. Release result files may
-be copied here only when they are curated artifacts for a tagged release.
+This directory stores compact benchmark summaries used by README figures.
 
 Raw jobctl artifacts should normally stay in the job run directory or under
-`/tmp` until the release candidate is audited.
+`/tmp`. Commit only compact CSV/TSV summaries, host metadata, and generated
+figures needed for README claims.
 
+Current summaries may be marked `pre_public_measured_subset` in `metadata.toml`.
+Replace them with `public_main` summaries before making a formal release claim.

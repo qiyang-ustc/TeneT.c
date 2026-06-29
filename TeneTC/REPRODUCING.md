@@ -18,10 +18,11 @@ Recommended commands from the repository root:
 
 ```sh
 julia --project=TeneTC -e 'using Pkg; Pkg.instantiate()'
+TENETC_RUN_FASTTENET_GATE=1 julia --project=TeneTC -e 'using Pkg; Pkg.test()'
 julia --project=TeneTC --startup-file=no benchmarks/tenet/run_tenetc.jl
 python3 benchmarks/tenet/compare_tenet_vs_tenetc.py master_summary.txt tenetc_summary.txt comparison.tsv
-python3 benchmarks/plots/plot_speedup.py comparison.tsv results/figures/tenetc_speedup.png
+python3 benchmarks/plots/plot_speedup.py benchmarks/results/tenetc_h100.tsv TeneTC/docs/figures/tenetc_speedup.svg
 ```
 
-This branch contains local unregistered workspace dependency wiring for the
-benchmark environment.
+Use the JobFiles in `benchmarks/jobfiles/` for audited H100 runs. Commit only
+compact summaries and host metadata from jobctl artifacts.
