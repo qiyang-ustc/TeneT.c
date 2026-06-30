@@ -16,6 +16,18 @@ Release benchmark contract:
 The benchmark table reports step runtime ratios only. It does not report VUMPS
 convergence error.
 
+## Acknowledgements and Citation
+
+`TeneTC` is downstream engineering work built around high-quality Julia oracles.
+We deeply thank Xingyu Zhang for TeneT.jl, which provides the tensor-network
+implementation used as the iPEPS-unified reference for this benchmark. We also
+thank Jutho for KrylovKit.jl, which supplies the Krylov machinery used by the
+Julia reference path.
+
+If you use this code, please also cite TeneT.jl and KrylovKit.jl. The native
+C++/CUDA kernels here are validated against those reference implementations;
+they do not replace the scientific and software credit of the upstream projects.
+
 ## Release Benchmark Results
 
 These are warmed single-step VUMPS timings. They are not full-solve timings.
