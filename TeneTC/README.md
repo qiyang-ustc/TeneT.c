@@ -45,8 +45,8 @@ r = run_boundary(critical_beta(); chi=128, maxiter=20, maxiter_ad=0, arraytype=C
 | Area | Coverage |
 | :--- | :--- |
 | Model | 2D classical Ising boundary VUMPS |
-| Backend | CPU `Float64`, CUDA `CuArray{Float64}` native path |
-| Baseline | TeneT.jl `master` pinned to `b9ac7919a96e930639935c9370ae568139bc8747` |
+| Backend | GPU TeneT.c CUDA `CuArray{Float64}` native path; CPU smoke coverage |
+| Baseline | GPU TeneT.jl `master` using `CuArray`, pinned to `b9ac7919a96e930639935c9370ae568139bc8747` |
 | Patch policy | `tenet_master_cuda_compat.patch` is an ecosystem-version adapter |
 | Solver dependency | `KrylovKitC` native Krylov backend |
 
@@ -77,10 +77,12 @@ Speedup is shown only for `chi` values where the TeneT.jl master baseline
 completed under the same benchmark settings. Timeout or not-measured rows are
 visible and are not converted into speedup claims.
 
-The comparison is a specialized TeneT.c native backend against the pinned
-TeneT.jl master runtime using CUDA arrays. It is not a pure GPU kernel-level
-comparison and should not be read as a claim that all TeneT.jl workloads see the
-same acceleration.
+The comparison is GPU TeneT.jl master versus GPU TeneT.c on H100. Both scripts
+set `TENET_BENCH_BACKEND=cuda`, construct CUDA arrays, and synchronize after
+initialization and VUMPS iteration timing. It is still an end-to-end comparison
+of a specialized native backend against the pinned TeneT.jl master runtime, not
+a pure GPU kernel-level microbenchmark and not a claim that all TeneT.jl
+workloads see the same acceleration.
 
 ## Performance Evidence
 
@@ -90,14 +92,14 @@ Figures are generated from committed TSV artifacts under `benchmarks/results/`:
 python3 benchmarks/plots/plot_release_figures.py
 ```
 
-### Completed-baseline speedup
+### Completed GPU-baseline speedup
 
 H100 public-main runs on Snellius `gpu_h100`; TeneT.c native run
 `run-1723bfcdc707`, TeneT.jl master baseline runs
 `run-24c4e94078f0`, `run-a0e0f4fa3a8f`, `run-5a9253bd14e9`,
 `run-beb778b4ad87`, and `run-046dc6fb654f`.
 
-| chi | TeneT.jl master median (s) | TeneT.c median (s) | speedup | master error | TeneT.c error | status |
+| chi | TeneT.jl master GPU median (s) | TeneT.c GPU median (s) | speedup | master error | TeneT.c error | status |
 | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
 | 32 | 39.827650 | 1.404854 | 28.35x | 2.03e-05 | 3.36e-05 | measured |
 | 48 | 38.011892 | 1.719294 | 22.11x | 1.51e-05 | 2.75e-05 | measured |
@@ -115,7 +117,7 @@ H100 public-main runs on Snellius `gpu_h100`; TeneT.c native run
 The native-only scaling curve is kept separate so large `chi` measurements are
 visible without implying a completed TeneT.jl baseline.
 
-| chi | TeneT.c median (s) | p25 (s) | p75 (s) | TeneT.c error |
+| chi | TeneT.c GPU median (s) | p25 (s) | p75 (s) | TeneT.c error |
 | ---: | ---: | ---: | ---: | ---: |
 | 32 | 1.404854 | 1.404048 | 1.405367 | 3.36e-05 |
 | 48 | 1.719294 | 1.718513 | 1.719433 | 2.75e-05 |
@@ -140,8 +142,8 @@ Planned matrix:
 
 | Workload | chi values | warmup | repeats |
 | :--- | :--- | ---: | ---: |
-| TeneT.c H100 native | `32,48,64,96,128,192,256,384` | 2 | 9 |
-| TeneT.jl master H100 baseline | `32,48,64,96,128` | 2 | 9 |
+| GPU TeneT.c H100 native | `32,48,64,96,128,192,256,384` | 2 | 9 |
+| GPU TeneT.jl master H100 baseline | `32,48,64,96,128` | 2 | 9 |
 
 Larger master baselines may be attempted, but not-measured rows remain excluded
 from speedup headlines until a completed baseline artifact exists.
@@ -152,7 +154,8 @@ from speedup headlines until a completed baseline artifact exists.
 - Completed-baseline speedup is limited to `chi=32,48,64,96,128`; larger
   master baselines remain not measured.
 - Native-only scaling is not a speedup claim.
-- Completed-baseline speedup is an end-to-end specialized-backend comparison,
-  not an apples-to-apples microbenchmark of identical GPU kernels.
+- Completed-baseline speedup is GPU TeneT.jl master versus GPU TeneT.c on H100,
+  but it is still an end-to-end specialized-backend comparison, not an
+  apples-to-apples microbenchmark of identical GPU kernels.
 - The CUDA compatibility patch is only for benchmarking the pinned TeneT.jl
   baseline on the current CUDA/Julia environment.

@@ -1,8 +1,8 @@
 # Generated Benchmark Tables
 
-## Completed-Baseline Comparison
+## Completed GPU-Baseline Comparison
 
-| chi | TeneT.jl master median (s) | TeneT.c median (s) | speedup | master error | TeneT.c error | status |
+| chi | TeneT.jl master GPU median (s) | TeneT.c GPU median (s) | speedup | master error | TeneT.c error | status |
 | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
 | 32 | 39.827650 | 1.404854 | 28.35x | 2.03e-05 | 3.36e-05 | measured |
 | 48 | 38.011892 | 1.719294 | 22.11x | 1.51e-05 | 2.75e-05 | measured |
@@ -13,9 +13,9 @@
 | 256 | not measured | 4.234532 | n/a | n/a | 3.85e-06 | not measured |
 | 384 | not measured | 7.143338 | n/a | n/a | 2.81e-06 | not measured |
 
-## Native Scaling
+## Native GPU Scaling
 
-| chi | TeneT.c median (s) | p25 (s) | p75 (s) | TeneT.c error |
+| chi | TeneT.c GPU median (s) | p25 (s) | p75 (s) | TeneT.c error |
 | ---: | ---: | ---: | ---: | ---: |
 | 32 | 1.404854 | 1.404048 | 1.405367 | 3.36e-05 |
 | 48 | 1.719294 | 1.718513 | 1.719433 | 2.75e-05 |

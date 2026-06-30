@@ -34,20 +34,29 @@ tenetc = dict(read_rows(sys.argv[2], "tenetc"))
 
 with open(sys.argv[3], "w") as out:
     out.write(
-        "chi\tmaster_seconds\ttenetc_seconds\tratio_tenetc_over_master\t"
+        "chi\tmaster_backend\ttenetc_backend\tmaster_device\ttenetc_device\t"
+        "master_seconds\ttenetc_seconds\tratio_tenetc_over_master\t"
         "speedup_master_over_tenetc\tmaster_err\ttenetc_err\tmaster_status\ttenetc_status\n"
     )
     for chi in sorted(tenetc):
         t = tenetc[chi]
+        tenetc_backend = t.get("backend", "unknown")
+        tenetc_device = t.get("device", "unknown")
         tenetc_seconds = float(t["median_total_seconds"])
         if chi in master:
             m = master[chi]
+            master_backend = m.get("backend", "unknown")
+            master_device = m.get("device", "unknown")
             master_seconds = float(m["median_total_seconds"])
             ratio = tenetc_seconds / master_seconds
             out.write(
-                "%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9e\t%.9e\tmeasured\tmeasured\n"
+                "%d\t%s\t%s\t%s\t%s\t%.9f\t%.9f\t%.9f\t%.9f\t%.9e\t%.9e\tmeasured\tmeasured\n"
                 % (
                     chi,
+                    master_backend,
+                    tenetc_backend,
+                    master_device,
+                    tenetc_device,
                     master_seconds,
                     tenetc_seconds,
                     ratio,
@@ -58,6 +67,6 @@ with open(sys.argv[3], "w") as out:
             )
         else:
             out.write(
-                "%d\t\t%.9f\t\t\t\t%.9e\ttimeout\tmeasured\n"
-                % (chi, tenetc_seconds, float(t["err"]))
+                "%d\t\t%s\t\t%s\t\t%.9f\t\t\t\t%.9e\tnot measured\tmeasured\n"
+                % (chi, tenetc_backend, tenetc_device, tenetc_seconds, float(t["err"]))
             )

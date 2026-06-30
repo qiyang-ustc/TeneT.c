@@ -63,13 +63,15 @@ def write_native_tsv(rows: list[dict[str, str]], path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as out:
         out.write(
-            "chi\ttenetc_seconds\ttenetc_p25_seconds\ttenetc_p75_seconds\t"
+            "chi\tbackend\tdevice\ttenetc_seconds\ttenetc_p25_seconds\ttenetc_p75_seconds\t"
             "tenetc_err\ttenetc_status\n"
         )
         for row in rows:
             out.write(
-                "{chi}\t{median}\t{p25}\t{p75}\t{err}\tmeasured\n".format(
+                "{chi}\t{backend}\t{device}\t{median}\t{p25}\t{p75}\t{err}\tmeasured\n".format(
                     chi=row["chi"],
+                    backend=row.get("backend", "unknown"),
+                    device=row.get("device", "unknown"),
                     median=f"{float(row['median_total_seconds']):.9f}",
                     p25=f"{float(row['p25_total_seconds']):.9f}",
                     p75=f"{float(row['p75_total_seconds']):.9f}",
@@ -87,24 +89,33 @@ def write_comparison_tsv(
     master_by_chi = {int(row["chi"]): row for row in master_rows}
     with path.open("w", encoding="utf-8") as out:
         out.write(
-            "chi\tmaster_seconds\ttenetc_seconds\tratio_tenetc_over_master\t"
+            "chi\tmaster_backend\ttenetc_backend\tmaster_device\ttenetc_device\t"
+            "master_seconds\ttenetc_seconds\tratio_tenetc_over_master\t"
             "speedup_master_over_tenetc\tmaster_err\ttenetc_err\t"
             "master_status\ttenetc_status\n"
         )
         for native in native_rows:
             chi = int(native["chi"])
+            tenetc_backend = native.get("backend", native.get("tenetc_backend", "unknown"))
+            tenetc_device = native.get("device", native.get("tenetc_device", "unknown"))
             tenetc_seconds = float(
                 native.get("tenetc_seconds", native.get("median_total_seconds", "nan"))
             )
             tenetc_err = float(native.get("tenetc_err", native.get("err", "nan")))
             if chi in master_by_chi:
                 master = master_by_chi[chi]
+                master_backend = master.get("backend", "unknown")
+                master_device = master.get("device", "unknown")
                 master_seconds = float(master["median_total_seconds"])
                 ratio = tenetc_seconds / master_seconds
                 out.write(
-                    "%d\t%.9f\t%.9f\t%.9f\t%.9f\t%.9e\t%.9e\tmeasured\tmeasured\n"
+                    "%d\t%s\t%s\t%s\t%s\t%.9f\t%.9f\t%.9f\t%.9f\t%.9e\t%.9e\tmeasured\tmeasured\n"
                     % (
                         chi,
+                        master_backend,
+                        tenetc_backend,
+                        master_device,
+                        tenetc_device,
                         master_seconds,
                         tenetc_seconds,
                         ratio,
@@ -115,8 +126,8 @@ def write_comparison_tsv(
                 )
             else:
                 out.write(
-                    "%d\t\t%.9f\t\t\t\t%.9e\tnot measured\tmeasured\n"
-                    % (chi, tenetc_seconds, tenetc_err)
+                    "%d\t\t%s\t\t%s\t\t%.9f\t\t\t\t%.9e\tnot measured\tmeasured\n"
+                    % (chi, tenetc_backend, tenetc_device, tenetc_seconds, tenetc_err)
                 )
 
 

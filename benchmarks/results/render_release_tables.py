@@ -18,9 +18,9 @@ def read_tsv(path: Path) -> list[dict[str, str]]:
 
 def render_comparison(rows: list[dict[str, str]]) -> list[str]:
     lines = [
-        "## Completed-Baseline Comparison",
+        "## Completed GPU-Baseline Comparison",
         "",
-        "| chi | TeneT.jl master median (s) | TeneT.c median (s) | speedup | master error | TeneT.c error | status |",
+        "| chi | TeneT.jl master GPU median (s) | TeneT.c GPU median (s) | speedup | master error | TeneT.c error | status |",
         "| ---: | ---: | ---: | ---: | ---: | ---: | :--- |",
     ]
     for row in rows:
@@ -37,9 +37,9 @@ def render_comparison(rows: list[dict[str, str]]) -> list[str]:
 
 def render_native(rows: list[dict[str, str]]) -> list[str]:
     lines = [
-        "## Native Scaling",
+        "## Native GPU Scaling",
         "",
-        "| chi | TeneT.c median (s) | p25 (s) | p75 (s) | TeneT.c error |",
+        "| chi | TeneT.c GPU median (s) | p25 (s) | p75 (s) | TeneT.c error |",
         "| ---: | ---: | ---: | ---: | ---: |",
     ]
     for row in rows:

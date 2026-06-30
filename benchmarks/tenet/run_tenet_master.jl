@@ -35,9 +35,15 @@ function sync_backend(backend)
     return nothing
 end
 
+function backend_device(backend)
+    backend == "cuda" || return "cpu"
+    return replace(string(CUDA.name(CUDA.device())), ' ' => '_')
+end
+
 include(joinpath(dirname(dirname(pathof(TeneT))), "example", "exampletensors.jl"))
 
 backend, arraytype = backend_arraytype()
+device = backend_device(backend)
 default_chis = backend == "cuda" ? "64,128,256" : "32,64,128"
 chis = env_ints("TENET_BENCH_CHIS", default_chis)
 beta = env_float("TENET_BENCH_BETA", 0.44068679350977147)
@@ -78,8 +84,9 @@ for chi in chis
     end
 
     @printf(
-        "TENET_MASTER_2DISING backend=%s branch=master commit=%s patch=%s eltype=%s chi=%d beta=%.17g tol=%.3e maxiter=%d miniter=%d warmup=%d repeats=%d median_init_seconds=%.9f median_iter_seconds=%.9f median_total_seconds=%.9f p25_total_seconds=%.9f p75_total_seconds=%.9f err=%.9e timestamp=%s\n",
+        "TENET_MASTER_2DISING backend=%s device=%s branch=master commit=%s patch=%s eltype=%s chi=%d beta=%.17g tol=%.3e maxiter=%d miniter=%d warmup=%d repeats=%d median_init_seconds=%.9f median_iter_seconds=%.9f median_total_seconds=%.9f p25_total_seconds=%.9f p75_total_seconds=%.9f err=%.9e timestamp=%s\n",
         backend,
+        device,
         commit,
         patch,
         string(eltype(M)),

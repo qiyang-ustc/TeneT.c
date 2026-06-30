@@ -8,8 +8,8 @@ must use the expanded defaults and committed compact artifacts.
 
 Default release matrix:
 
-- TeneT.c H100 native: `32,48,64,96,128,192,256,384`, warmup 2, repeat 9.
-- TeneT.jl master H100 baseline: `32,48,64,96,128`, warmup 2, repeat 9.
+- GPU TeneT.c H100 native: `32,48,64,96,128,192,256,384`, warmup 2, repeat 9.
+- GPU TeneT.jl master H100 baseline: `32,48,64,96,128`, warmup 2, repeat 9.
 
 Before running `snellius_tenetc_h100.jobfile.yaml`, prepare a pinned TeneT.jl
 master checkout and apply `benchmarks/tenet/patches/tenet_master_cuda_compat.patch`

@@ -1,6 +1,9 @@
 # TeneT.c Benchmarks
 
-These scripts compare a pinned TeneT.jl master checkout against `TeneTC`.
+These scripts compare a pinned GPU TeneT.jl master checkout against GPU
+`TeneTC` on the 2D Ising benchmark. Both benchmark entrypoints set
+`TENET_BENCH_BACKEND=cuda` for release H100 runs, construct CUDA arrays, and
+synchronize after timed initialization and VUMPS iteration regions.
 
 The TeneT.jl reference path may require the patch in
 `patches/tenet_master_cuda_compat.patch` when running with modern CUDA.jl and
@@ -10,8 +13,8 @@ TeneT.jl.
 
 Default release sizes:
 
-- TeneT.c H100 native: `TENET_BENCH_CHIS=32,48,64,96,128,192,256,384`
-- TeneT.jl master H100 baseline: one `chi` per job for `32,48,64,96,128`
+- GPU TeneT.c H100 native: `TENET_BENCH_CHIS=32,48,64,96,128,192,256,384`
+- GPU TeneT.jl master H100 baseline: one `chi` per job for `32,48,64,96,128`
 
 Run examples:
 
