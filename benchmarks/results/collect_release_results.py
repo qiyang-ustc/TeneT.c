@@ -115,7 +115,7 @@ def write_comparison_tsv(
                 )
             else:
                 out.write(
-                    "%d\t\t%.9f\t\t\t\t%.9e\ttimeout\tmeasured\n"
+                    "%d\t\t%.9f\t\t\t\t%.9e\tnot measured\tmeasured\n"
                     % (chi, tenetc_seconds, tenetc_err)
                 )
 
@@ -125,7 +125,7 @@ def main() -> None:
     parser.add_argument("--comparison-run-id")
     parser.add_argument("--comparison", type=Path)
     parser.add_argument("--comparison-host-env", type=Path)
-    parser.add_argument("--master-raw-summary", type=Path)
+    parser.add_argument("--master-raw-summary", type=Path, action="append")
     parser.add_argument("--native-run-id")
     parser.add_argument("--native-summary", type=Path)
     parser.add_argument("--native-raw-summary", type=Path)
@@ -174,7 +174,10 @@ def main() -> None:
         native_rows = read_native_tsv(args.native_summary)
 
     if args.master_raw_summary:
-        master_rows = read_summary_rows(args.master_raw_summary, "TENET_MASTER_2DISING")
+        master_rows = []
+        for summary in args.master_raw_summary:
+            master_rows.extend(read_summary_rows(summary, "TENET_MASTER_2DISING"))
+        master_rows.sort(key=lambda row: int(row["chi"]))
         write_comparison_tsv(native_rows, master_rows, args.outdir / "tenetc_h100.tsv")
     elif args.comparison:
         copy_required(args.comparison, args.outdir / "tenetc_h100.tsv")

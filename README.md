@@ -27,8 +27,8 @@ are engineering backends and benchmark artifacts.
 - TeneT.c native CPU/CUDA `Float64` path.
 - TeneT.jl `master` baseline at a pinned commit with a documented CUDA
   compatibility patch.
-- Native runtime scaling at larger `chi` even when the TeneT.jl baseline times
-  out.
+- Native runtime scaling at larger `chi` when the TeneT.jl baseline is not
+  available.
 
 `TeneTC` depends on `KrylovKitC` from
 `https://github.com/qiyang-ustc/KrylovKit.c`.
@@ -56,8 +56,8 @@ The reference baseline is TeneT.jl `master` at pinned commit
 current CUDA/Julia packages, not a criticism of the original project.
 
 Speedup is shown only for `chi` values where the TeneT.jl master baseline
-completed. Timeout rows are reported separately and are not converted into
-speedup claims.
+completed. Timeout or not-measured rows are reported separately and are not
+converted into speedup claims.
 
 ## Performance Evidence
 
@@ -67,9 +67,9 @@ All figures are generated from committed TSV artifacts:
 python3 benchmarks/plots/plot_release_figures.py
 ```
 
-Current public artifacts are partial. The expanded release suite targets 8
-native chi values and 5 required master-baseline chi values before any stronger
-performance claim.
+Current public artifacts include 8 native TeneT.c H100 points and 5 completed
+TeneT.jl master baseline points. Larger master baselines are explicitly marked
+not measured rather than converted into speedup claims.
 
 ![Completed baseline speedup](TeneTC/docs/figures/tenetc_completed_speedup.svg)
 
@@ -86,11 +86,10 @@ Detailed tables, run IDs, limitations, and reproduction commands are in
 bash benchmarks/run_release_suite.sh
 ```
 
-Planned matrix:
+Measured matrix:
 
 - TeneT.c H100 native: `chi=32,48,64,96,128,192,256,384`, warmup 2, repeat 9.
-- TeneT.jl master H100 baseline: required `chi=32,48,64,96,128`, warmup 2,
-  repeat 9; larger baselines are optional and recorded as timeout/not measured
-  if they exceed the configured wall time.
+- TeneT.jl master H100 baseline: completed `chi=32,48,64,96,128`, warmup 2,
+  repeat 9; `chi=192,256,384` are not measured and do not appear as speedup.
 
 No speedup claim is made for missing, timed-out, or smoke-test rows.
