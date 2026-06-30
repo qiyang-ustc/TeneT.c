@@ -25,8 +25,10 @@ are engineering backends and benchmark artifacts.
 
 - 2D classical Ising boundary VUMPS.
 - GPU TeneT.c native `CuArray{Float64}` path on H100.
-- GPU TeneT.jl `master` baseline using `CuArray` at a pinned commit with a
-  documented CUDA compatibility patch.
+- GPU TeneT.jl official `iPEPS-unified` branch real `CuArray{Float64}` path
+  on H100 for the fair GPU-vs-GPU baseline.
+- GPU TeneT.jl `master` timing using `CuArray{ComplexF64}` at a pinned commit
+  with a documented CUDA compatibility patch, retained only as an audit row.
 - Native runtime scaling at larger `chi` when the TeneT.jl baseline is not
   available.
 
@@ -50,14 +52,20 @@ comparisons.
 
 ## Baseline Policy
 
-The reference baseline is TeneT.jl `master` at pinned commit
-`b9ac7919a96e930639935c9370ae568139bc8747` with
-`tenet_master_cuda_compat.patch`. The patch is an ecosystem-version adapter for
-current CUDA/Julia packages, not a criticism of the original project.
+The fair GPU-vs-GPU reference baseline is the official TeneT.jl
+`iPEPS-unified` branch at pinned commit
+`a4bfff01bc898728b5b6af136f50e420aeeac5bc`, using real `Float64` CUDA arrays.
 
-Speedup is shown only for `chi` values where the TeneT.jl master baseline
-completed. Timeout or not-measured rows are reported separately and are not
-converted into speedup claims.
+The pinned TeneT.jl `master` commit
+`b9ac7919a96e930639935c9370ae568139bc8747` is also retained as a historical
+timing audit with `tenet_master_cuda_compat.patch`. That patch is an
+ecosystem-version adapter for current CUDA/Julia packages, not a criticism of
+the original project. Because this master path uses `ComplexF64`, it is not
+used for headline speedup claims against the real TeneT.c path.
+
+Speedup is shown only for `chi` values where a real `Float64` TeneT.jl
+baseline completed. Timeout, not-measured, scalar-mismatched, or audit-only
+rows are reported separately and are not converted into speedup claims.
 
 ## Performance Evidence
 
@@ -68,15 +76,17 @@ python3 benchmarks/plots/plot_release_figures.py
 ```
 
 Current public artifacts include 8 GPU TeneT.c H100 points and 5 completed GPU
-TeneT.jl master H100 baseline points. Larger master baselines are explicitly
-marked not measured rather than converted into speedup claims.
+TeneT.jl master H100 timing points. These master rows are retained as an audit
+dataset, not as a headline speedup claim: TeneT.jl master uses `ComplexF64`,
+while TeneT.c uses the real `Float64` native path. The fair real-vs-real
+`iPEPS-unified` artifacts are collected separately before a speedup headline is
+promoted.
 
-The completed-baseline speedup is GPU TeneT.jl master versus GPU TeneT.c on
-the same H100 class, both using CUDA arrays and explicit synchronization. It is
-still an end-to-end specialized-backend comparison, not a pure kernel-level
-microbenchmark and not a claim about all TeneT.jl workloads.
+The completed master/TeneT.c ratio is therefore a raw runtime ratio for a
+non-equivalent scalar comparison. The real-vs-real `iPEPS-unified` baseline is
+the required source for any headline GPU speedup.
 
-![Completed baseline speedup](TeneTC/docs/figures/tenetc_completed_speedup.svg)
+![Completed GPU timing audit](TeneTC/docs/figures/tenetc_completed_speedup.svg)
 
 ![Native runtime scaling](TeneTC/docs/figures/tenetc_native_scaling.svg)
 
@@ -94,7 +104,11 @@ bash benchmarks/run_release_suite.sh
 Measured matrix:
 
 - GPU TeneT.c H100 native: `chi=32,48,64,96,128,192,256,384`, warmup 2, repeat 9.
-- GPU TeneT.jl master H100 baseline: completed `chi=32,48,64,96,128`, warmup 2,
-  repeat 9; `chi=192,256,384` are not measured and do not appear as speedup.
+- GPU TeneT.jl `iPEPS-unified` real H100 baseline:
+  `chi=32,48,64,96,128`, warmup 2, repeat 9.
+- GPU TeneT.jl master H100 timing audit: completed `chi=32,48,64,96,128`,
+  warmup 2, repeat 9; `chi=192,256,384` are not measured and do not appear as
+  speedup.
 
-No speedup claim is made for missing, timed-out, or smoke-test rows.
+No speedup claim is made for scalar-mismatched, missing, timed-out, or
+smoke-test rows.

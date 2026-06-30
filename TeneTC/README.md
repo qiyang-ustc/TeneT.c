@@ -46,8 +46,9 @@ r = run_boundary(critical_beta(); chi=128, maxiter=20, maxiter_ad=0, arraytype=C
 | :--- | :--- |
 | Model | 2D classical Ising boundary VUMPS |
 | Backend | GPU TeneT.c CUDA `CuArray{Float64}` native path; CPU smoke coverage |
-| Baseline | GPU TeneT.jl `master` using `CuArray`, pinned to `b9ac7919a96e930639935c9370ae568139bc8747` |
-| Patch policy | `tenet_master_cuda_compat.patch` is an ecosystem-version adapter |
+| Fair reference timing | GPU TeneT.jl official `iPEPS-unified` branch using real `CuArray{Float64}`, pinned to `a4bfff01bc898728b5b6af136f50e420aeeac5bc` |
+| Audit timing | GPU TeneT.jl `master` using `CuArray{ComplexF64}`, pinned to `b9ac7919a96e930639935c9370ae568139bc8747` |
+| Patch policy | `tenet_master_cuda_compat.patch` is an ecosystem-version adapter for the master audit only |
 | Solver dependency | `KrylovKitC` native Krylov backend |
 
 Large-cell, symmetry-sector, complex production tensors, and broad TeneT feature
@@ -73,16 +74,13 @@ The gate includes:
 
 ## Baseline Policy
 
-Speedup is shown only for `chi` values where the TeneT.jl master baseline
-completed under the same benchmark settings. Timeout or not-measured rows are
-visible and are not converted into speedup claims.
-
-The comparison is GPU TeneT.jl master versus GPU TeneT.c on H100. Both scripts
-set `TENET_BENCH_BACKEND=cuda`, construct CUDA arrays, and synchronize after
-initialization and VUMPS iteration timing. It is still an end-to-end comparison
-of a specialized native backend against the pinned TeneT.jl master runtime, not
-a pure GPU kernel-level microbenchmark and not a claim that all TeneT.jl
-workloads see the same acceleration.
+The fair GPU-vs-GPU baseline is the official TeneT.jl `iPEPS-unified` branch
+with `mode=general`, `CuArray{Float64}`, and the same 2D Ising workload family
+as TeneT.c. The older TeneT.jl `master` rows are shown only as a timing audit:
+both scripts use CUDA arrays and synchronization around timed regions, but the
+scalar paths differ (`ComplexF64` master versus `Float64` TeneT.c). Timeout,
+not-measured, and scalar-mismatched rows are visible and are not converted into
+speedup claims.
 
 ## Performance Evidence
 
@@ -92,41 +90,41 @@ Figures are generated from committed TSV artifacts under `benchmarks/results/`:
 python3 benchmarks/plots/plot_release_figures.py
 ```
 
-### Completed GPU-baseline speedup
+### Completed GPU Timing Audit
 
 H100 public-main runs on Snellius `gpu_h100`; TeneT.c native run
 `run-1723bfcdc707`, TeneT.jl master baseline runs
 `run-24c4e94078f0`, `run-a0e0f4fa3a8f`, `run-5a9253bd14e9`,
 `run-beb778b4ad87`, and `run-046dc6fb654f`.
 
-| chi | TeneT.jl master GPU median (s) | TeneT.c GPU median (s) | speedup | master error | TeneT.c error | status |
-| ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| 32 | 39.827650 | 1.404854 | 28.35x | 2.03e-05 | 3.36e-05 | measured |
-| 48 | 38.011892 | 1.719294 | 22.11x | 1.51e-05 | 2.75e-05 | measured |
-| 64 | 44.800633 | 2.109899 | 21.23x | 1.28e-05 | 1.33e-05 | measured |
-| 96 | 68.559429 | 2.491735 | 27.51x | 7.55e-06 | 7.17e-06 | measured |
-| 128 | 422.869580 | 2.830716 | 149.39x | 6.15e-06 | 6.68e-06 | measured |
-| 192 | not measured | 3.331687 | n/a | n/a | 4.23e-06 | not measured |
-| 256 | not measured | 4.234532 | n/a | n/a | 3.85e-06 | not measured |
-| 384 | not measured | 7.143338 | n/a | n/a | 2.81e-06 | not measured |
+| chi | master eltype | TeneT.c eltype | TeneT.jl master GPU median (s) | TeneT.c GPU median (s) | raw ratio | master error | TeneT.c error | comparison status |
+| ---: | :--- | :--- | ---: | ---: | ---: | ---: | ---: | :--- |
+| 32 | ComplexF64 | Float64 | 39.827650 | 1.404854 | 28.35x | 2.03e-05 | 3.36e-05 | scalar_mismatch_audit_only |
+| 48 | ComplexF64 | Float64 | 38.011892 | 1.719294 | 22.11x | 1.51e-05 | 2.75e-05 | scalar_mismatch_audit_only |
+| 64 | ComplexF64 | Float64 | 44.800633 | 2.109899 | 21.23x | 1.28e-05 | 1.33e-05 | scalar_mismatch_audit_only |
+| 96 | ComplexF64 | Float64 | 68.559429 | 2.491735 | 27.51x | 7.55e-06 | 7.17e-06 | scalar_mismatch_audit_only |
+| 128 | ComplexF64 | Float64 | 422.869580 | 2.830716 | 149.39x | 6.15e-06 | 6.68e-06 | scalar_mismatch_audit_only |
+| 192 | not measured | Float64 | not measured | 3.331687 | n/a | n/a | 4.23e-06 | not measured |
+| 256 | not measured | Float64 | not measured | 4.234532 | n/a | n/a | 3.85e-06 | not measured |
+| 384 | not measured | Float64 | not measured | 7.143338 | n/a | n/a | 2.81e-06 | not measured |
 
-![TeneT.c completed-baseline speedup](docs/figures/tenetc_completed_speedup.svg)
+![TeneT.c completed GPU timing audit](docs/figures/tenetc_completed_speedup.svg)
 
 ### Native scaling
 
 The native-only scaling curve is kept separate so large `chi` measurements are
 visible without implying a completed TeneT.jl baseline.
 
-| chi | TeneT.c GPU median (s) | p25 (s) | p75 (s) | TeneT.c error |
-| ---: | ---: | ---: | ---: | ---: |
-| 32 | 1.404854 | 1.404048 | 1.405367 | 3.36e-05 |
-| 48 | 1.719294 | 1.718513 | 1.719433 | 2.75e-05 |
-| 64 | 2.109899 | 2.109182 | 2.113542 | 1.33e-05 |
-| 96 | 2.491735 | 2.491423 | 2.492150 | 7.17e-06 |
-| 128 | 2.830716 | 2.830250 | 2.831308 | 6.68e-06 |
-| 192 | 3.331687 | 3.328526 | 3.333417 | 4.23e-06 |
-| 256 | 4.234532 | 4.230963 | 4.237986 | 3.85e-06 |
-| 384 | 7.143338 | 7.140215 | 7.143937 | 2.81e-06 |
+| chi | backend | eltype | TeneT.c GPU median (s) | p25 (s) | p75 (s) | TeneT.c error |
+| ---: | :--- | :--- | ---: | ---: | ---: | ---: |
+| 32 | cuda | Float64 | 1.404854 | 1.404048 | 1.405367 | 3.36e-05 |
+| 48 | cuda | Float64 | 1.719294 | 1.718513 | 1.719433 | 2.75e-05 |
+| 64 | cuda | Float64 | 2.109899 | 2.109182 | 2.113542 | 1.33e-05 |
+| 96 | cuda | Float64 | 2.491735 | 2.491423 | 2.492150 | 7.17e-06 |
+| 128 | cuda | Float64 | 2.830716 | 2.830250 | 2.831308 | 6.68e-06 |
+| 192 | cuda | Float64 | 3.331687 | 3.328526 | 3.333417 | 4.23e-06 |
+| 256 | cuda | Float64 | 4.234532 | 4.230963 | 4.237986 | 3.85e-06 |
+| 384 | cuda | Float64 | 7.143338 | 7.140215 | 7.143937 | 2.81e-06 |
 
 ![TeneT.c native runtime scaling](docs/figures/tenetc_native_scaling.svg)
 
@@ -143,7 +141,8 @@ Planned matrix:
 | Workload | chi values | warmup | repeats |
 | :--- | :--- | ---: | ---: |
 | GPU TeneT.c H100 native | `32,48,64,96,128,192,256,384` | 2 | 9 |
-| GPU TeneT.jl master H100 baseline | `32,48,64,96,128` | 2 | 9 |
+| GPU TeneT.jl `iPEPS-unified` real H100 baseline | `32,48,64,96,128` | 2 | 9 |
+| GPU TeneT.jl master H100 timing audit | `32,48,64,96,128` | 2 | 9 |
 
 Larger master baselines may be attempted, but not-measured rows remain excluded
 from speedup headlines until a completed baseline artifact exists.
@@ -151,11 +150,10 @@ from speedup headlines until a completed baseline artifact exists.
 ## Limitations
 
 - This is not full TeneT.jl feature coverage.
-- Completed-baseline speedup is limited to `chi=32,48,64,96,128`; larger
-  master baselines remain not measured.
+- Completed TeneT.jl master rows are scalar-mismatched timing audit rows
+  (`ComplexF64` master versus `Float64` TeneT.c), not speedup claims.
+- Headline GPU speedup requires completed `iPEPS-unified` real-baseline
+  artifacts.
 - Native-only scaling is not a speedup claim.
-- Completed-baseline speedup is GPU TeneT.jl master versus GPU TeneT.c on H100,
-  but it is still an end-to-end specialized-backend comparison, not an
-  apples-to-apples microbenchmark of identical GPU kernels.
 - The CUDA compatibility patch is only for benchmarking the pinned TeneT.jl
   baseline on the current CUDA/Julia environment.

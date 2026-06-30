@@ -9,11 +9,15 @@ must use the expanded defaults and committed compact artifacts.
 Default release matrix:
 
 - GPU TeneT.c H100 native: `32,48,64,96,128,192,256,384`, warmup 2, repeat 9.
-- GPU TeneT.jl master H100 baseline: `32,48,64,96,128`, warmup 2, repeat 9.
+- GPU TeneT.jl `iPEPS-unified` real H100 baseline:
+  `32,48,64,96,128`, warmup 2, repeat 9.
+- GPU TeneT.jl master H100 audit: `32,48,64,96,128`, warmup 2, repeat 9.
 
-Before running `snellius_tenetc_h100.jobfile.yaml`, prepare a pinned TeneT.jl
-master checkout and apply `benchmarks/tenet/patches/tenet_master_cuda_compat.patch`
-if needed by the CUDA/KrylovKit versions on the target host.
+Before running `snellius_tenet_ipeps_h100_onechi.jobfile.yaml`, prepare a
+pinned TeneT.jl `iPEPS-unified` checkout. Before running the master audit
+jobfile, prepare a pinned TeneT.jl master checkout and apply
+`benchmarks/tenet/patches/tenet_master_cuda_compat.patch` if needed by the
+CUDA/KrylovKit versions on the target host.
 
 For long baselines, prefer `snellius_tenetc_master_h100_onechi.jobfile.yaml`
 plus `snellius_tenetc_native_h100.jobfile.yaml` per `chi`. If the master

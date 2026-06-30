@@ -1,0 +1,74 @@
+name: release-tenet-ipeps-snellius-h100-onechi
+command: |
+  bash -lc 'set -euo pipefail
+  RUN_DIR="$PWD"
+  repo="{repo}"
+  branch_repo="{branch_repo}"
+  julia="{julia}"
+  cuda_module="{cuda_module}"
+  cd "$repo"
+  if [ -n "$cuda_module" ]; then
+    for mod in $cuda_module; do
+      module load "$mod"
+    done
+  fi
+  mkdir -p "$RUN_DIR/results"
+  export TENET_BENCH_BACKEND="cuda"
+  export TENET_BENCH_CHIS="{chi}"
+  export TENET_BENCH_WARMUP="{warmup}"
+  export TENET_BENCH_REPEATS="{repeats}"
+  export TENET_BENCH_TOL="{tol}"
+  export TENET_BENCH_MAXITER="{maxiter}"
+  export TENET_IPEPS_METHOD="{method}"
+  export TENET_IPEPS_MODE="{mode}"
+  export TENET_IPEPS_POWER_ITER="{power_iter}"
+  export TENET_IPEPS_FORLOOP_ITER="{forloop_iter}"
+  export TENET_IPEPS_COMMIT="{tenet_ipeps_commit}"
+  (
+    echo "name=release-tenet-ipeps-snellius-h100-onechi"
+    echo "repo=$repo"
+    echo "branch_repo=$branch_repo"
+    echo "date_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "chi=$TENET_BENCH_CHIS"
+    echo "method=$TENET_IPEPS_METHOD"
+    echo "mode=$TENET_IPEPS_MODE"
+    echo "power_iter=$TENET_IPEPS_POWER_ITER"
+    echo "cuda_module=$cuda_module"
+    "$julia" --version
+    which nvcc || true
+    nvcc --version | head -1 || true
+    nvidia-smi -L || true
+    git -C "$repo" rev-parse HEAD 2>/dev/null || true
+    git -C "$repo" status --short 2>/dev/null || true
+    git -C "$branch_repo" rev-parse HEAD 2>/dev/null || true
+    git -C "$branch_repo" status --short 2>/dev/null || true
+  ) > "$RUN_DIR/host_env.txt" 2>&1
+  "$julia" --project="$branch_repo" --startup-file=no \
+    "$repo/benchmarks/tenet/run_tenet_ipeps_unified.jl" 2>&1 | tee "$RUN_DIR/results/tenet_ipeps.log"
+  grep TENET_IPEPS_2DISING "$RUN_DIR/results/tenet_ipeps.log" > "$RUN_DIR/results/ipeps_summary.txt"
+  find "$RUN_DIR/results" -type f -print | sort > "$RUN_DIR/artifact_files.txt"'
+
+params:
+  repo: { type: str, default: "/home/qyang/source/TeneT.c" }
+  branch_repo: { type: str, default: "/home/qyang/source/original_tenet_ipeps_unified" }
+  julia: { type: str, default: "/gpfs/home1/qyang/.juliaup/bin/julia" }
+  cuda_module: { type: str, default: "2025 CUDA/12.8.0" }
+  chi: { type: int, default: 64 }
+  warmup: { type: int, default: 2 }
+  repeats: { type: int, default: 9 }
+  tol: { type: str, default: "1e-10" }
+  maxiter: { type: int, default: 20 }
+  method: { type: str, default: "simple_eig" }
+  mode: { type: str, default: "general" }
+  power_iter: { type: int, default: 100 }
+  forloop_iter: { type: int, default: 5 }
+  tenet_ipeps_commit: { type: str, default: "a4bfff01bc898728b5b6af136f50e420aeeac5bc" }
+
+backends:
+  - backend: slurm
+    server: snellius
+
+artifacts:
+  - "host_env.txt"
+  - "artifact_files.txt"
+  - "results/*"

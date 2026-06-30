@@ -45,12 +45,16 @@ def plot_completed_speedup(rows: list[dict[str, str]], path: Path, *, target: in
     chis = [int(r["chi"]) for r in rows]
     xpos = list(range(len(rows)))
     measured = []
+    comparable = []
     for row in rows:
-        ratio = row.get("ratio_tenetc_over_master", "")
-        measured.append(None if ratio == "" else 1.0 / float(ratio))
+        ratio = row.get("raw_ratio_master_over_tenetc", row.get("speedup_master_over_tenetc", ""))
+        measured.append(None if ratio == "" else float(ratio))
+        if ratio:
+            comparable.append(row.get("comparison_status", "") == "comparable")
     completed = sum(y is not None for y in measured)
     missing = len(measured) - completed
     ymax = max([y for y in measured if y is not None] + [1.0])
+    is_speedup = bool(comparable) and all(comparable)
 
     fig, ax = plt.subplots(figsize=(7.2, 4.2), constrained_layout=True)
     for i, y in enumerate(measured):
@@ -60,7 +64,12 @@ def plot_completed_speedup(rows: list[dict[str, str]], path: Path, *, target: in
             ax.bar(i, y, width=0.62, color=BLUE, edgecolor="#263238", linewidth=0.7)
             ax.text(i, y + ymax * 0.04, f"{y:.2f}x", ha="center", va="bottom", fontsize=9)
     ax.axhline(1.0, color=GRAY, linestyle="--", linewidth=1.0)
-    ax.text(0.01, 0.98, f"{completed}/{target} planned master baselines completed",
+    note = (
+        f"{completed}/{target} matched real baselines completed"
+        if is_speedup
+        else f"{completed}/{target} master baselines completed; scalar mismatch audit only"
+    )
+    ax.text(0.01, 0.98, note,
             transform=ax.transAxes, ha="left", va="top", fontsize=8.5, color=GRAY)
     if missing:
         ax.text(0.99, 0.98, "x = baseline not measured",
@@ -70,8 +79,18 @@ def plot_completed_speedup(rows: list[dict[str, str]], path: Path, *, target: in
     ax.set_xticks(xpos)
     ax.set_xticklabels([str(c) for c in chis])
     ax.set_xlabel("bond dimension chi")
-    ax.set_ylabel("speedup (GPU TeneT.jl master / GPU TeneT.c)")
-    ax.set_title("Snellius H100, 2D Ising GPU TeneT.jl master vs GPU TeneT.c\ncompleted master baselines, warmup=2 repeat=9")
+    ax.set_ylabel(
+        "speedup (TeneT.jl real / TeneT.c real)"
+        if is_speedup
+        else "raw runtime ratio (not a speedup claim)"
+    )
+    ax.set_title(
+        "Real-vs-real GPU baseline: TeneT.jl patched master vs TeneT.c\n"
+        "2D Ising, completed baselines, warmup=2 repeat=9"
+        if is_speedup
+        else "Audit only: GPU TeneT.jl ComplexF64 vs GPU TeneT.c Float64\n"
+        "2D Ising, completed master baselines, warmup=2 repeat=9"
+    )
     ax.set_ylim(0, ymax * 1.28)
     ax.grid(axis="y", alpha=0.28, color=LIGHT_GRID)
     ax.spines["top"].set_visible(False)

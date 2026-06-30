@@ -1,9 +1,9 @@
-chi	master_backend	tenetc_backend	master_device	tenetc_device	master_seconds	tenetc_seconds	ratio_tenetc_over_master	speedup_master_over_tenetc	master_err	tenetc_err	master_status	tenetc_status
-32	cuda	cuda	NVIDIA_H100	NVIDIA_H100	39.827649615	1.404854465	0.035273346	28.350018174	2.026829667e-05	3.358660678e-05	measured	measured
-48	cuda	cuda	NVIDIA_H100	NVIDIA_H100	38.011891742	1.719294390	0.045230435	22.109007022	1.511585644e-05	2.748012614e-05	measured	measured
-64	cuda	cuda	NVIDIA_H100	NVIDIA_H100	44.800633001	2.109899377	0.047095303	21.233540087	1.275445500e-05	1.333142614e-05	measured	measured
-96	cuda	cuda	NVIDIA_H100	NVIDIA_H100	68.559429248	2.491734957	0.036344161	27.514735889	7.552901588e-06	7.170901403e-06	measured	measured
-128	cuda	cuda	NVIDIA_H100	NVIDIA_H100	422.869579597	2.830715953	0.006694064	149.386086989	6.150274687e-06	6.676831840e-06	measured	measured
-192		cuda		NVIDIA_H100		3.331686799				4.229484517e-06	not measured	measured
-256		cuda		NVIDIA_H100		4.234532225				3.848479240e-06	not measured	measured
-384		cuda		NVIDIA_H100		7.143337589				2.807550192e-06	not measured	measured
+chi	master_backend	tenetc_backend	master_device	tenetc_device	master_eltype	tenetc_eltype	master_seconds	tenetc_seconds	ratio_tenetc_over_master	raw_ratio_master_over_tenetc	master_err	tenetc_err	master_status	tenetc_status	comparison_status
+32	cuda	cuda	NVIDIA_H100	NVIDIA_H100	ComplexF64	Float64	39.827649615	1.404854465	0.035273346	28.350018174	2.026829667e-05	3.358660678e-05	measured	measured	scalar_mismatch_audit_only
+48	cuda	cuda	NVIDIA_H100	NVIDIA_H100	ComplexF64	Float64	38.011891742	1.719294390	0.045230435	22.109007022	1.511585644e-05	2.748012614e-05	measured	measured	scalar_mismatch_audit_only
+64	cuda	cuda	NVIDIA_H100	NVIDIA_H100	ComplexF64	Float64	44.800633001	2.109899377	0.047095303	21.233540087	1.275445500e-05	1.333142614e-05	measured	measured	scalar_mismatch_audit_only
+96	cuda	cuda	NVIDIA_H100	NVIDIA_H100	ComplexF64	Float64	68.559429248	2.491734957	0.036344161	27.514735889	7.552901588e-06	7.170901403e-06	measured	measured	scalar_mismatch_audit_only
+128	cuda	cuda	NVIDIA_H100	NVIDIA_H100	ComplexF64	Float64	422.869579597	2.830715953	0.006694064	149.386086989	6.150274687e-06	6.676831840e-06	measured	measured	scalar_mismatch_audit_only
+192		cuda		NVIDIA_H100		Float64		3.331686799				4.229484517e-06	not measured	measured	not measured
+256		cuda		NVIDIA_H100		Float64		4.234532225				3.848479240e-06	not measured	measured	not measured
+384		cuda		NVIDIA_H100		Float64		7.143337589				2.807550192e-06	not measured	measured	not measured
