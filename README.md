@@ -75,25 +75,31 @@ All figures are generated from committed TSV artifacts:
 python3 benchmarks/plots/plot_release_figures.py
 ```
 
-Current public artifacts include 8 GPU TeneT.c H100 points and 5 completed GPU
-TeneT.jl master H100 timing points. These master rows are retained as an audit
-dataset, not as a headline speedup claim: TeneT.jl master uses `ComplexF64`,
-while TeneT.c uses the real `Float64` native path. The fair real-vs-real
-`iPEPS-unified` artifacts are collected separately before a speedup headline is
-promoted.
+The headline GPU comparison is real CUDA versus real CUDA: official TeneT.jl
+`iPEPS-unified` (`CuArray{Float64}`) against TeneT.c (`CuArray{Float64}`), both
+on Snellius H100, 2D Ising, warmup 2, repeat 9. On the completed
+`chi=32,48,64,96,128` range, the measured speedup is 6.40x to 12.09x. Larger
+TeneT.c native sizes are shown as scaling only until a completed TeneT.jl real
+baseline exists.
 
-The completed master/TeneT.c ratio is therefore a raw runtime ratio for a
-non-equivalent scalar comparison. The real-vs-real `iPEPS-unified` baseline is
-the required source for any headline GPU speedup.
+| chi | TeneT.jl real GPU median (s) | TeneT.c real GPU median (s) | speedup | TeneT.jl error | TeneT.c error |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 32 | 16.987717 | 1.404854 | 12.09x | 2.02e-05 | 3.36e-05 |
+| 48 | 17.306478 | 1.719294 | 10.07x | 6.76e-06 | 2.75e-05 |
+| 64 | 17.734378 | 2.109899 | 8.41x | 1.53e-05 | 1.33e-05 |
+| 96 | 17.928481 | 2.491735 | 7.20x | 1.22e-05 | 7.17e-06 |
+| 128 | 18.124031 | 2.830716 | 6.40x | 5.32e-06 | 6.68e-06 |
 
-![Completed GPU timing audit](TeneTC/docs/figures/tenetc_completed_speedup.svg)
+![Real GPU speedup](TeneTC/docs/figures/tenetc_real_speedup.svg)
 
 ![Native runtime scaling](TeneTC/docs/figures/tenetc_native_scaling.svg)
 
 ![Native correctness trend](TeneTC/docs/figures/tenetc_error_vs_chi.svg)
 
-Detailed tables, run IDs, limitations, and reproduction commands are in
-`TeneTC/README.md`.
+The TeneT.jl `master` CUDA audit remains committed, but it is explicitly not a
+speedup claim because that path uses `ComplexF64` while TeneT.c uses
+`Float64`. Detailed tables, run IDs, limitations, and reproduction commands are
+in `TeneTC/README.md`.
 
 ## Expanded Release Sweep
 

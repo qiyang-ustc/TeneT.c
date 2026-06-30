@@ -10,3 +10,8 @@ host_env = "benchmarks/results/tenetc_master_h100_host_env.txt"
 run_id = "run-1723bfcdc707"
 summary = "benchmarks/results/tenetc_native_h100.tsv"
 host_env = "benchmarks/results/tenetc_native_h100_host_env.txt"
+
+[tenet_ipeps_h100]
+run_id = "run-64f60d92fdcb,run-1a5c19416816,run-d607011acacb,run-279bfc36172c,run-c2af6466687a"
+summary = "benchmarks/results/tenet_ipeps_h100.tsv"
+host_env = "benchmarks/results/tenet_ipeps_h100_host_env.txt"

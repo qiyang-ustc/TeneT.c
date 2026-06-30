@@ -90,25 +90,23 @@ Figures are generated from committed TSV artifacts under `benchmarks/results/`:
 python3 benchmarks/plots/plot_release_figures.py
 ```
 
-### Completed GPU Timing Audit
+### Real GPU Baseline
 
-H100 public-main runs on Snellius `gpu_h100`; TeneT.c native run
-`run-1723bfcdc707`, TeneT.jl master baseline runs
-`run-24c4e94078f0`, `run-a0e0f4fa3a8f`, `run-5a9253bd14e9`,
-`run-beb778b4ad87`, and `run-046dc6fb654f`.
+This is the only GPU speedup table in this README. It compares official
+TeneT.jl `iPEPS-unified` real CUDA runs against TeneT.c real CUDA runs on the
+same H100 workload family. The TeneT.jl run IDs are `run-64f60d92fdcb`,
+`run-1a5c19416816`, `run-d607011acacb`, `run-279bfc36172c`, and
+`run-c2af6466687a`; the TeneT.c native source run is `run-1723bfcdc707`.
 
-| chi | master eltype | TeneT.c eltype | TeneT.jl master GPU median (s) | TeneT.c GPU median (s) | raw ratio | master error | TeneT.c error | comparison status |
-| ---: | :--- | :--- | ---: | ---: | ---: | ---: | ---: | :--- |
-| 32 | ComplexF64 | Float64 | 39.827650 | 1.404854 | 28.35x | 2.03e-05 | 3.36e-05 | scalar_mismatch_audit_only |
-| 48 | ComplexF64 | Float64 | 38.011892 | 1.719294 | 22.11x | 1.51e-05 | 2.75e-05 | scalar_mismatch_audit_only |
-| 64 | ComplexF64 | Float64 | 44.800633 | 2.109899 | 21.23x | 1.28e-05 | 1.33e-05 | scalar_mismatch_audit_only |
-| 96 | ComplexF64 | Float64 | 68.559429 | 2.491735 | 27.51x | 7.55e-06 | 7.17e-06 | scalar_mismatch_audit_only |
-| 128 | ComplexF64 | Float64 | 422.869580 | 2.830716 | 149.39x | 6.15e-06 | 6.68e-06 | scalar_mismatch_audit_only |
-| 192 | not measured | Float64 | not measured | 3.331687 | n/a | n/a | 4.23e-06 | not measured |
-| 256 | not measured | Float64 | not measured | 4.234532 | n/a | n/a | 3.85e-06 | not measured |
-| 384 | not measured | Float64 | not measured | 7.143338 | n/a | n/a | 2.81e-06 | not measured |
+| chi | TeneT.jl branch | TeneT.jl eltype | TeneT.c eltype | TeneT.jl median (s) | TeneT.c median (s) | speedup | TeneT.jl VUMPS error | TeneT.jl abs delta f | TeneT.c error | run id |
+| ---: | :--- | :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
+| 32 | iPEPS-unified | Float64 | Float64 | 16.987717 | 1.404854 | 12.09x | 2.02e-05 | 5.89e-08 | 3.36e-05 | run-64f60d92fdcb |
+| 48 | iPEPS-unified | Float64 | Float64 | 17.306478 | 1.719294 | 10.07x | 6.76e-06 | 6.73e-08 | 2.75e-05 | run-1a5c19416816 |
+| 64 | iPEPS-unified | Float64 | Float64 | 17.734378 | 2.109899 | 8.41x | 1.53e-05 | 5.55e-08 | 1.33e-05 | run-d607011acacb |
+| 96 | iPEPS-unified | Float64 | Float64 | 17.928481 | 2.491735 | 7.20x | 1.22e-05 | 5.60e-08 | 7.17e-06 | run-279bfc36172c |
+| 128 | iPEPS-unified | Float64 | Float64 | 18.124031 | 2.830716 | 6.40x | 5.32e-06 | 5.33e-08 | 6.68e-06 | run-c2af6466687a |
 
-![TeneT.c completed GPU timing audit](docs/figures/tenetc_completed_speedup.svg)
+![TeneT.c real GPU speedup](docs/figures/tenetc_real_speedup.svg)
 
 ### Native scaling
 
@@ -130,13 +128,37 @@ visible without implying a completed TeneT.jl baseline.
 
 ![TeneT.c native correctness trend](docs/figures/tenetc_error_vs_chi.svg)
 
+### Master Timing Audit
+
+The table below is retained to document the original `master` measurement, but
+it is not a speedup claim. The scalar paths differ: TeneT.jl `master` uses
+`ComplexF64`, while TeneT.c uses real `Float64`.
+
+H100 public-main runs on Snellius `gpu_h100`; TeneT.c native run
+`run-1723bfcdc707`, TeneT.jl master baseline runs
+`run-24c4e94078f0`, `run-a0e0f4fa3a8f`, `run-5a9253bd14e9`,
+`run-beb778b4ad87`, and `run-046dc6fb654f`.
+
+| chi | master eltype | TeneT.c eltype | TeneT.jl master GPU median (s) | TeneT.c GPU median (s) | raw ratio | master error | TeneT.c error | comparison status |
+| ---: | :--- | :--- | ---: | ---: | ---: | ---: | ---: | :--- |
+| 32 | ComplexF64 | Float64 | 39.827650 | 1.404854 | 28.35x | 2.03e-05 | 3.36e-05 | scalar_mismatch_audit_only |
+| 48 | ComplexF64 | Float64 | 38.011892 | 1.719294 | 22.11x | 1.51e-05 | 2.75e-05 | scalar_mismatch_audit_only |
+| 64 | ComplexF64 | Float64 | 44.800633 | 2.109899 | 21.23x | 1.28e-05 | 1.33e-05 | scalar_mismatch_audit_only |
+| 96 | ComplexF64 | Float64 | 68.559429 | 2.491735 | 27.51x | 7.55e-06 | 7.17e-06 | scalar_mismatch_audit_only |
+| 128 | ComplexF64 | Float64 | 422.869580 | 2.830716 | 149.39x | 6.15e-06 | 6.68e-06 | scalar_mismatch_audit_only |
+| 192 | not measured | Float64 | not measured | 3.331687 | n/a | n/a | 4.23e-06 | not measured |
+| 256 | not measured | Float64 | not measured | 4.234532 | n/a | n/a | 3.85e-06 | not measured |
+| 384 | not measured | Float64 | not measured | 7.143338 | n/a | n/a | 2.81e-06 | not measured |
+
+![TeneT.jl master timing audit](docs/figures/tenetc_master_audit.svg)
+
 ## Expanded Release Sweep
 
 ```sh
 bash benchmarks/run_release_suite.sh
 ```
 
-Planned matrix:
+Measured release matrix:
 
 | Workload | chi values | warmup | repeats |
 | :--- | :--- | ---: | ---: |
@@ -150,10 +172,10 @@ from speedup headlines until a completed baseline artifact exists.
 ## Limitations
 
 - This is not full TeneT.jl feature coverage.
+- The headline GPU speedup covers only the completed `iPEPS-unified`
+  real-baseline range `chi=32,48,64,96,128`.
 - Completed TeneT.jl master rows are scalar-mismatched timing audit rows
   (`ComplexF64` master versus `Float64` TeneT.c), not speedup claims.
-- Headline GPU speedup requires completed `iPEPS-unified` real-baseline
-  artifacts.
 - Native-only scaling is not a speedup claim.
 - The CUDA compatibility patch is only for benchmarking the pinned TeneT.jl
   baseline on the current CUDA/Julia environment.

@@ -1,5 +1,15 @@
 # Generated Benchmark Tables
 
+## Real GPU Baseline
+
+| chi | TeneT.jl branch | TeneT.jl eltype | TeneT.c eltype | TeneT.jl median (s) | TeneT.c median (s) | speedup | TeneT.jl VUMPS error | TeneT.jl abs delta f | TeneT.c error | run id |
+| ---: | :--- | :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
+| 32 | iPEPS-unified | Float64 | Float64 | 16.987717 | 1.404854 | 12.09x | 2.02e-05 | 5.89e-08 | 3.36e-05 | run-64f60d92fdcb |
+| 48 | iPEPS-unified | Float64 | Float64 | 17.306478 | 1.719294 | 10.07x | 6.76e-06 | 6.73e-08 | 2.75e-05 | run-1a5c19416816 |
+| 64 | iPEPS-unified | Float64 | Float64 | 17.734378 | 2.109899 | 8.41x | 1.53e-05 | 5.55e-08 | 1.33e-05 | run-d607011acacb |
+| 96 | iPEPS-unified | Float64 | Float64 | 17.928481 | 2.491735 | 7.20x | 1.22e-05 | 5.60e-08 | 7.17e-06 | run-279bfc36172c |
+| 128 | iPEPS-unified | Float64 | Float64 | 18.124031 | 2.830716 | 6.40x | 5.32e-06 | 5.33e-08 | 6.68e-06 | run-c2af6466687a |
+
 ## Completed GPU Timing Audit
 
 | chi | master eltype | TeneT.c eltype | TeneT.jl master GPU median (s) | TeneT.c GPU median (s) | ratio | master error | TeneT.c error | comparison status |

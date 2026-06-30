@@ -1,0 +1,23 @@
+TeneT.jl official real CUDA baseline for TeneT.c release figures.
+
+Machine: Snellius H100 partition
+GPU: NVIDIA H100
+Workload: 2D Ising boundary VUMPS, iPEPS-unified General mode, simple_eig
+Scalar policy: real CuArray{Float64} vs real CuArray{Float64}
+Warmup/repeats: warmup=2, repeats=9
+TeneT.jl branch: iPEPS-unified
+TeneT.jl commit: a4bfff01bc898728b5b6af136f50e420aeeac5bc
+TeneT.c source: public main commit 7f7c7315310dbb1845dbe480bd5e56e4862b5776
+TeneT.c native run source: benchmarks/results/tenetc_native_h100.tsv
+Tolerance: tol=1e-10
+VUMPS maxiter: 20
+Power iteration count: 100
+Run ids:
+  chi=32: run-64f60d92fdcb
+  chi=48: run-1a5c19416816
+  chi=64: run-d607011acacb
+  chi=96: run-279bfc36172c
+  chi=128: run-c2af6466687a
+
+The TeneT.jl master ComplexF64 timing audit is intentionally stored in a
+separate artifact and is not used for headline speedup claims.

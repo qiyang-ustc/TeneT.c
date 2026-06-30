@@ -43,6 +43,33 @@ def render_comparison(rows: list[dict[str, str]]) -> list[str]:
     return lines
 
 
+def render_real_gpu_baseline(rows: list[dict[str, str]]) -> list[str]:
+    lines = [
+        "## Real GPU Baseline",
+        "",
+        "| chi | TeneT.jl branch | TeneT.jl eltype | TeneT.c eltype | TeneT.jl median (s) | TeneT.c median (s) | speedup | TeneT.jl VUMPS error | TeneT.jl abs delta f | TeneT.c error | run id |",
+        "| ---: | :--- | :--- | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |",
+    ]
+    for row in rows:
+        lines.append(
+            "| {chi} | {branch} | {tenet_eltype} | {tenetc_eltype} | {tenet:.6f} | {tenetc:.6f} | {speedup:.2f}x | {tenet_err:.2e} | {ferr:.2e} | {tenetc_err:.2e} | {run_id} |".format(
+                chi=row["chi"],
+                branch=row["tenet_branch"],
+                tenet_eltype=row["tenet_eltype"],
+                tenetc_eltype=row["tenetc_eltype"],
+                tenet=float(row["tenet_seconds"]),
+                tenetc=float(row["tenetc_seconds"]),
+                speedup=float(row["speedup_tenet_over_tenetc"]),
+                tenet_err=float(row["tenet_err"]),
+                ferr=float(row["tenet_free_energy_abs_error"]),
+                tenetc_err=float(row["tenetc_err"]),
+                run_id=row["run_id"],
+            )
+        )
+    lines.append("")
+    return lines
+
+
 def render_native(rows: list[dict[str, str]]) -> list[str]:
     lines = [
         "## Native GPU Scaling",
@@ -68,6 +95,7 @@ def render_native(rows: list[dict[str, str]]) -> list[str]:
 
 def main() -> None:
     lines = ["# Generated Benchmark Tables", ""]
+    lines += render_real_gpu_baseline(read_tsv(RESULTS / "tenet_ipeps_h100.tsv"))
     lines += render_comparison(read_tsv(RESULTS / "tenetc_h100.tsv"))
     lines += render_native(read_tsv(RESULTS / "tenetc_native_h100.tsv"))
     (RESULTS / "summary.md").write_text("\n".join(lines), encoding="utf-8")

@@ -41,7 +41,7 @@ def finish(fig, path: Path) -> None:
     plt.close(fig)
 
 
-def plot_completed_speedup(rows: list[dict[str, str]], path: Path, *, target: int) -> None:
+def plot_master_audit(rows: list[dict[str, str]], path: Path, *, target: int) -> None:
     chis = [int(r["chi"]) for r in rows]
     xpos = list(range(len(rows)))
     measured = []
@@ -85,13 +85,43 @@ def plot_completed_speedup(rows: list[dict[str, str]], path: Path, *, target: in
         else "raw runtime ratio (not a speedup claim)"
     )
     ax.set_title(
-        "Real-vs-real GPU baseline: TeneT.jl patched master vs TeneT.c\n"
+        "Real-vs-real GPU baseline: TeneT.jl vs TeneT.c\n"
         "2D Ising, completed baselines, warmup=2 repeat=9"
         if is_speedup
         else "Audit only: GPU TeneT.jl ComplexF64 vs GPU TeneT.c Float64\n"
         "2D Ising, completed master baselines, warmup=2 repeat=9"
     )
     ax.set_ylim(0, ymax * 1.28)
+    ax.grid(axis="y", alpha=0.28, color=LIGHT_GRID)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    finish(fig, path)
+
+
+def plot_real_speedup(rows: list[dict[str, str]], path: Path, *, target: int) -> None:
+    chis = [int(r["chi"]) for r in rows]
+    xpos = list(range(len(rows)))
+    speedups = [float(r["speedup_tenet_over_tenetc"]) for r in rows]
+    ymax = max(speedups + [1.0])
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.2), constrained_layout=True)
+    ax.bar(xpos, speedups, width=0.62, color=GREEN, edgecolor="#263238", linewidth=0.7)
+    for i, y in enumerate(speedups):
+        ax.text(i, y + ymax * 0.035, f"{y:.2f}x", ha="center", va="bottom", fontsize=9)
+    ax.axhline(1.0, color=GRAY, linestyle="--", linewidth=1.0)
+    ax.text(0.01, 0.98, f"{len(rows)}/{target} real baselines completed; Float64 CUDA vs Float64 CUDA",
+            transform=ax.transAxes, ha="left", va="top", fontsize=8.5, color=GRAY)
+    ax.text(len(rows) - 0.45, 1.0 + ymax * 0.025, "parity",
+            ha="right", va="bottom", fontsize=8.5, color=GRAY)
+    ax.set_xticks(xpos)
+    ax.set_xticklabels([str(c) for c in chis])
+    ax.set_xlabel("bond dimension chi")
+    ax.set_ylabel("speedup (official TeneT.jl real CUDA / TeneT.c real CUDA)")
+    ax.set_title(
+        "Snellius H100, real CUDA 2D Ising\n"
+        "TeneT.jl iPEPS-unified General vs TeneT.c, warmup=2 repeat=9"
+    )
+    ax.set_ylim(0, ymax * 1.25)
     ax.grid(axis="y", alpha=0.28, color=LIGHT_GRID)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -146,9 +176,11 @@ def plot_error(rows: list[dict[str, str]], path: Path, *, target: int) -> None:
 
 
 def main() -> None:
+    real_gpu = read_tsv(RESULTS / "tenet_ipeps_h100.tsv")
     comparison = read_tsv(RESULTS / "tenetc_h100.tsv")
     native = read_tsv(RESULTS / "tenetc_native_h100.tsv")
-    plot_completed_speedup(comparison, FIGURES / "tenetc_completed_speedup.svg", target=5)
+    plot_real_speedup(real_gpu, FIGURES / "tenetc_real_speedup.svg", target=5)
+    plot_master_audit(comparison, FIGURES / "tenetc_master_audit.svg", target=5)
     plot_native_scaling(native, FIGURES / "tenetc_native_scaling.svg", target=8)
     plot_error(native, FIGURES / "tenetc_error_vs_chi.svg", target=8)
 
