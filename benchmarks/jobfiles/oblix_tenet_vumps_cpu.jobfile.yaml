@@ -1,0 +1,105 @@
+name: release-tenet-vumps-oblix-cpu
+command: |
+  bash -lc 'set -euo pipefail
+  RUN_DIR="$PWD"
+  repo="{repo}"
+  branch_repo="{branch_repo}"
+  julia="{julia}"
+  cd "$repo"
+  mkdir -p "$RUN_DIR/results"
+  export JULIA_NUM_THREADS="{julia_threads}"
+  export JULIA_PKG_PRECOMPILE_AUTO=0
+  export JULIA_NUM_PRECOMPILE_TASKS=1
+  export OPENBLAS_NUM_THREADS="{blas_threads}"
+  export OMP_NUM_THREADS="{omp_threads}"
+  export MKL_NUM_THREADS="{mkl_threads}"
+  if [ -n "{julia_depot}" ]; then
+    export JULIA_DEPOT_PATH="{julia_depot}"
+  fi
+  export TENET_BENCH_BACKEND="cpu"
+  export TENET_BENCH_CHIS="{chis}"
+  export TENET_BENCH_WARMUP="{warmup}"
+  export TENET_BENCH_REPEATS="{repeats}"
+  export TENET_BENCH_TOL="{tol}"
+  export TENET_BENCH_MAXITER="{maxiter}"
+  export TENET_BENCH_MINITER="{miniter}"
+  export TENET_BENCH_KRYLOVDIM="{krylovdim}"
+  export TENET_BENCH_ARNOLDI_TOL="{arnoldi_tol}"
+  export TENET_BENCH_RESIDUAL_TOL="{residual_tol}"
+  export TENET_BENCH_SEED="{seed}"
+  export TENET_IPEPS_METHOD="{method}"
+  export TENET_IPEPS_MODE="{mode}"
+  export TENET_IPEPS_POWER_ITER="{power_iter}"
+  export TENET_IPEPS_FORLOOP_ITER="{forloop_iter}"
+  export TENET_IPEPS_COMMIT="{tenet_ipeps_commit}"
+  export TENET_NATIVE_ARNOLDI_LIB="$repo/TenetNative/deps/libtenet_native_arnoldi.so"
+  (
+    echo "name=release-tenet-vumps-oblix-cpu"
+    echo "machine=Oblix"
+    echo "requested_mem=4G"
+    echo "comparison=cpu_vs_cpu"
+    echo "eltype=Float64"
+    echo "repo=$repo"
+    echo "branch_repo=$branch_repo"
+    echo "date_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "chis=$TENET_BENCH_CHIS"
+    echo "warmup=$TENET_BENCH_WARMUP"
+    echo "repeats=$TENET_BENCH_REPEATS"
+    echo "method=$TENET_IPEPS_METHOD"
+    echo "mode=$TENET_IPEPS_MODE"
+    echo "threads=JULIA:$JULIA_NUM_THREADS OPENBLAS:$OPENBLAS_NUM_THREADS OMP:$OMP_NUM_THREADS MKL:$MKL_NUM_THREADS"
+    "$julia" --version
+    git -C "$repo" rev-parse HEAD 2>/dev/null || true
+    git -C "$branch_repo" rev-parse HEAD 2>/dev/null || true
+  ) > "$RUN_DIR/host_env.txt" 2>&1
+  "$julia" --project="$repo/TeneTC" --startup-file=no --compiled-modules=no -e "using Pkg; Pkg.instantiate(; update_registry=false)"
+  "$julia" --project="$repo/TeneTC" --startup-file=no --compiled-modules=no -e "using TeneTC; build_native_arnoldi(target=:cpu)"
+  test -f "$TENET_NATIVE_ARNOLDI_LIB"
+  export TENET_BENCH_BUILD_NATIVE="0"
+  "$julia" --project="$branch_repo" --startup-file=no --compiled-modules=no -e "using Pkg; Pkg.instantiate(; update_registry=false)"
+  "$julia" --project="$branch_repo" --startup-file=no --compiled-modules=no \
+    "$repo/benchmarks/tenet/run_tenet_ipeps_unified.jl" 2>&1 | tee "$RUN_DIR/results/tenet_ipeps.log"
+  "$julia" --project="$repo/TeneTC" --startup-file=no --compiled-modules=no \
+    "$repo/benchmarks/tenet/run_tenetc.jl" 2>&1 | tee "$RUN_DIR/results/tenetc.log"
+  grep TENET_IPEPS_VUMPS_STEP "$RUN_DIR/results/tenet_ipeps.log" > "$RUN_DIR/results/ipeps_vumps_step_summary.txt"
+  grep TENETC_VUMPS_STEP "$RUN_DIR/results/tenetc.log" > "$RUN_DIR/results/tenetc_vumps_step_summary.txt"
+  python3 "$repo/benchmarks/tenet/compare_tenet_vs_tenetc.py" \
+    "$RUN_DIR/results/ipeps_vumps_step_summary.txt" \
+    "$RUN_DIR/results/tenetc_vumps_step_summary.txt" \
+    "$RUN_DIR/results/vumps_step_cpu_oblix.tsv"
+  cat "$RUN_DIR/results/vumps_step_cpu_oblix.tsv"
+  find "$RUN_DIR/results" -type f -print | sort > "$RUN_DIR/artifact_files.txt"'
+
+params:
+  repo: { type: str, default: "/home/qyang1/projects/TeneT.c" }
+  branch_repo: { type: str, default: "/home/qyang1/projects/original_tenet_ipeps_unified" }
+  julia: { type: str, default: "/home/qyang1/.juliaup/bin/julia" }
+  chis: { type: str, default: "32,64,96,128,160,192,224,256" }
+  warmup: { type: int, default: 3 }
+  repeats: { type: int, default: 11 }
+  tol: { type: str, default: "1e-10" }
+  maxiter: { type: int, default: 20 }
+  miniter: { type: int, default: 1 }
+  krylovdim: { type: int, default: 30 }
+  arnoldi_tol: { type: str, default: "1e-12" }
+  residual_tol: { type: str, default: "1e-12" }
+  seed: { type: int, default: 42 }
+  method: { type: str, default: "krylovkit" }
+  mode: { type: str, default: "general" }
+  power_iter: { type: int, default: 100 }
+  forloop_iter: { type: int, default: 5 }
+  tenet_ipeps_commit: { type: str, default: "a4bfff01bc898728b5b6af136f50e420aeeac5bc" }
+  julia_threads: { type: int, default: 1 }
+  blas_threads: { type: int, default: 1 }
+  omp_threads: { type: int, default: 1 }
+  mkl_threads: { type: int, default: 1 }
+  julia_depot: { type: str, default: "" }
+
+backends:
+  - backend: slurm
+    server: oblix
+
+artifacts:
+  - "host_env.txt"
+  - "artifact_files.txt"
+  - "results/*"

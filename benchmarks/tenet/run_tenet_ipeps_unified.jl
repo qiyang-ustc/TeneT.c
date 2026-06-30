@@ -19,8 +19,14 @@ function median_value(xs)
     return ys[cld(length(ys), 2)]
 end
 
+function percentile_value(xs, q::Float64)
+    ys = sort(collect(Float64, xs))
+    idx = clamp(round(Int, 1 + (length(ys) - 1) * q), 1, length(ys))
+    return ys[idx]
+end
+
 function backend_arraytype()
-    backend = lowercase(env_value("TENET_BENCH_BACKEND", "cuda"))
+    backend = lowercase(env_value("TENET_BENCH_BACKEND", "cpu"))
     if backend == "cuda"
         CUDA.allowscalar(false)
         return backend, CUDA.CuArray
@@ -42,101 +48,87 @@ end
 
 backend, arraytype = backend_arraytype()
 device = backend_device(backend)
-chis = env_ints("TENET_BENCH_CHIS", backend == "cuda" ? "32,48,64,96,128" : "16,32,64")
+chis = env_ints("TENET_BENCH_CHIS", "32,64,96,128,160,192,224,256")
 beta = env_float("TENET_BENCH_BETA", log1p(sqrt(2.0)) / 2)
 tol = env_float("TENET_BENCH_TOL", 1e-10)
 maxiter = env_int("TENET_BENCH_MAXITER", 20)
 miniter = env_int("TENET_BENCH_MINITER", 1)
-warmup = env_int("TENET_BENCH_WARMUP", 2)
-repeats = env_int("TENET_BENCH_REPEATS", 7)
+warmup_steps = env_int("TENET_BENCH_WARMUP", 3)
+repeats = env_int("TENET_BENCH_REPEATS", 11)
 seed = env_int("TENET_BENCH_SEED", 42)
 power_iter = env_int("TENET_IPEPS_POWER_ITER", 100)
 forloop_iter = env_int("TENET_IPEPS_FORLOOP_ITER", 5)
-method = lowercase(env_value("TENET_IPEPS_METHOD", "simple_eig"))
+method = lowercase(env_value("TENET_IPEPS_METHOD", "krylovkit"))
 mode = lowercase(env_value("TENET_IPEPS_MODE", "general"))
 commit = env_value("TENET_IPEPS_COMMIT", "unknown")
-onsager_npts = env_int("TENET_BENCH_ONSAGER_NPTS", 2000)
 
-ifsimple_eig =
-    method == "simple_eig" ? true :
-    method == "krylovkit" ? false :
-    error("TENET_IPEPS_METHOD must be simple_eig or krylovkit")
-
-model = Ising(lattice=Square(), beta=beta)
-f_exact = exact_free_energy(model; npts=onsager_npts)
+method == "krylovkit" || error("TENET_IPEPS_METHOD must be krylovkit for release benchmarks")
+ifsimple_eig = false
 
 for chi in chis
-    init_seconds = Float64[]
-    iter_seconds = Float64[]
-    total_seconds = Float64[]
-    last_err = NaN
-    last_free_energy_abs_error = NaN
-    last_eltype = "unknown"
+    Random.seed!(seed)
+    backend == "cuda" && CUDA.seed!(seed)
+    GC.gc()
 
-    for rep in 1:(warmup + repeats)
-        Random.seed!(seed)
-        backend == "cuda" && CUDA.seed!(seed)
+    model = Ising(lattice=Square(), beta=beta)
+    M, alg = if mode == "general"
+        M = MPO(model, General; atype=arraytype)
+        alg = VUMPS{General}(;
+            verbosity=0,
+            maxiter=maxiter,
+            miniter=miniter,
+            maxiter_ad=0,
+            miniter_ad=0,
+            tol=tol,
+            ifsimple_eig=ifsimple_eig,
+            power_iter=power_iter,
+            ifupdown=false,
+            forloop_iter=forloop_iter,
+        )
+        M, alg
+    elseif mode == "c4v"
+        M = MPO(model, C4v; atype=arraytype)
+        alg = VUMPS{C4v}(;
+            verbosity=0,
+            maxiter=maxiter,
+            miniter=miniter,
+            maxiter_ad=0,
+            miniter_ad=0,
+            tol=tol,
+            ifsimple_eig=ifsimple_eig,
+            power_iter=power_iter,
+            ifupdown=false,
+            forloop_iter=forloop_iter,
+        )
+        M, alg
+    else
+        error("TENET_IPEPS_MODE must be general or c4v")
+    end
+    last_eltype = string(eltype(M.data[1]))
+
+    sync_backend(backend)
+    setup_start = time_ns()
+    rt = init_env(M, chi, alg)
+    sync_backend(backend)
+    setup_seconds = (time_ns() - setup_start) / 1.0e9
+
+    for _ in 1:warmup_steps
+        rt, _ = TeneT.vumps_step(rt, M, alg)
+        sync_backend(backend)
+    end
+
+    step_seconds = Float64[]
+    for _ in 1:repeats
         GC.gc()
-
-        M, alg = if mode == "general"
-            M = MPO(model, General; atype=arraytype)
-            alg = VUMPS{General}(;
-                verbosity=0,
-                maxiter=maxiter,
-                miniter=miniter,
-                maxiter_ad=0,
-                miniter_ad=0,
-                tol=tol,
-                ifsimple_eig=ifsimple_eig,
-                power_iter=power_iter,
-                ifupdown=false,
-                forloop_iter=forloop_iter,
-            )
-            M, alg
-        elseif mode == "c4v"
-            M = MPO(model, C4v; atype=arraytype)
-            alg = VUMPS{C4v}(;
-                verbosity=0,
-                maxiter=maxiter,
-                miniter=miniter,
-                maxiter_ad=0,
-                miniter_ad=0,
-                tol=tol,
-                ifsimple_eig=ifsimple_eig,
-                power_iter=power_iter,
-                ifupdown=false,
-                forloop_iter=forloop_iter,
-            )
-            M, alg
-        else
-            error("TENET_IPEPS_MODE must be general or c4v")
-        end
-        last_eltype = string(eltype(M.data[1]))
-
         sync_backend(backend)
         t0 = time_ns()
-        rt = init_env(M, chi, alg)
+        rt, _ = TeneT.vumps_step(rt, M, alg)
         sync_backend(backend)
-        t1 = time_ns()
-        rt, err = leading_boundary(rt, M, alg)
-        sync_backend(backend)
-        t2 = time_ns()
-
-        if rep > warmup
-            push!(init_seconds, (t1 - t0) / 1.0e9)
-            push!(iter_seconds, (t2 - t1) / 1.0e9)
-            push!(total_seconds, (t2 - t0) / 1.0e9)
-        end
-        last_err = Float64(real(err))
-        if rep == warmup + repeats
-            fr = free_energy(rt, M, alg, model)
-            sync_backend(backend)
-            last_free_energy_abs_error = abs(fr.f - f_exact)
-        end
+        push!(step_seconds, (time_ns() - t0) / 1.0e9)
     end
 
     @printf(
-        "TENET_IPEPS_2DISING branch=iPEPS-unified commit=%s method=%s mode=%s backend=%s device=%s eltype=%s chi=%d beta=%.17g tol=%.3e maxiter=%d miniter=%d power_iter=%d forloop_iter=%d warmup=%d repeats=%d median_init_seconds=%.9f median_iter_seconds=%.9f median_total_seconds=%.9f p25_total_seconds=%.9f p75_total_seconds=%.9f err=%.9e free_energy_abs_error=%.9e onsager_npts=%d timestamp=%s\n",
+        "TENET_IPEPS_VUMPS_STEP branch=iPEPS-unified commit=%s method=%s mode=%s backend=%s device=%s eltype=%s chi=%d beta=%.17g step=vumps_step warmed=true warmup_steps=%d repeats=%d setup_seconds=%.9f median_step_seconds=%.9f p25_step_seconds=%.9f p75_step_seconds=%.9f tol=%.3e maxiter=%d miniter=%d power_iter=%d forloop_iter=%d seed=%d timestamp=%s\n",
         commit,
         method,
         mode,
@@ -145,21 +137,18 @@ for chi in chis
         last_eltype,
         chi,
         beta,
+        warmup_steps,
+        repeats,
+        setup_seconds,
+        median_value(step_seconds),
+        percentile_value(step_seconds, 0.25),
+        percentile_value(step_seconds, 0.75),
         tol,
         maxiter,
         miniter,
         power_iter,
         forloop_iter,
-        warmup,
-        repeats,
-        median_value(init_seconds),
-        median_value(iter_seconds),
-        median_value(total_seconds),
-        sort(total_seconds)[max(1, fld(length(total_seconds), 4))],
-        sort(total_seconds)[min(length(total_seconds), cld(3 * length(total_seconds), 4))],
-        last_err,
-        last_free_energy_abs_error,
-        onsager_npts,
+        seed,
         string(now(UTC)),
     )
 end

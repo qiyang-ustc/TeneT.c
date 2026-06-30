@@ -20,6 +20,12 @@ function median_value(xs)
     return ys[cld(length(ys), 2)]
 end
 
+function percentile_value(xs, q::Float64)
+    ys = sort(collect(Float64, xs))
+    idx = clamp(round(Int, 1 + (length(ys) - 1) * q), 1, length(ys))
+    return ys[idx]
+end
+
 function backend_arraytype()
     backend = lowercase(env_value("TENET_BENCH_BACKEND", "cpu"))
     if backend == "cuda"
@@ -43,78 +49,80 @@ end
 
 backend, arraytype = backend_arraytype()
 device = backend_device(backend)
-default_chis = backend == "cuda" ? "64,128,256" : "32,64,128"
+default_chis = "32,64,96,128,160,192,224,256"
 chis = env_ints("TENET_BENCH_CHIS", default_chis)
 beta = env_float("TENET_BENCH_BETA", critical_beta())
 tol = env_float("TENET_BENCH_TOL", 1e-10)
 maxiter = env_int("TENET_BENCH_MAXITER", 20)
 miniter = env_int("TENET_BENCH_MINITER", 1)
-warmup = env_int("TENET_BENCH_WARMUP", 2)
-repeats = env_int("TENET_BENCH_REPEATS", 7)
+warmup_steps = env_int("TENET_BENCH_WARMUP", 3)
+repeats = env_int("TENET_BENCH_REPEATS", 11)
 seed = env_int("TENET_BENCH_SEED", 42)
 krylovdim = env_int("TENET_BENCH_KRYLOVDIM", 30)
 arnoldi_tol = env_float("TENET_BENCH_ARNOLDI_TOL", 1e-12)
 residual_tol = env_float("TENET_BENCH_RESIDUAL_TOL", backend == "cuda" ? 1e-10 : 1e-12)
 
-build_native_arnoldi(target=(backend == "cuda" ? :cuda : :cpu))
+if lowercase(env_value("TENET_BENCH_BUILD_NATIVE", "true")) in ("1", "true", "yes")
+    build_native_arnoldi(target=(backend == "cuda" ? :cuda : :cpu))
+end
 
 for chi in chis
-    init_seconds = Float64[]
-    iter_seconds = Float64[]
-    total_seconds = Float64[]
-    last_err = NaN
-    for rep in 1:(warmup + repeats)
-        Random.seed!(seed)
+    Random.seed!(seed)
+    GC.gc()
+    network = ising_network(beta; arraytype)
+    alg = vumps_algorithm(;
+        tol,
+        maxiter,
+        miniter,
+        maxiter_ad=0,
+        miniter_ad=0,
+        verbosity=0,
+        ifupdown=false,
+        native_arnoldi_krylovdim=krylovdim,
+        native_arnoldi_tol=arnoldi_tol,
+        native_arnoldi_check_residual=true,
+        native_arnoldi_residual_tol=residual_tol,
+    )
+
+    setup_start = time_ns()
+    rt = VUMPSRuntime(network, chi, alg)
+    sync_backend(backend)
+    setup_seconds = (time_ns() - setup_start) / 1.0e9
+
+    for _ in 1:warmup_steps
+        rt, _ = FastTeneT.vumps_step_Hermitian(rt, network, alg)
+        sync_backend(backend)
+    end
+
+    step_seconds = Float64[]
+    for _ in 1:repeats
         GC.gc()
-        network = ising_network(beta; arraytype)
-        alg = vumps_algorithm(;
-            tol,
-            maxiter,
-            miniter,
-            maxiter_ad=0,
-            miniter_ad=0,
-            verbosity=0,
-            ifupdown=false,
-            native_arnoldi_krylovdim=krylovdim,
-            native_arnoldi_tol=arnoldi_tol,
-            native_arnoldi_check_residual=true,
-            native_arnoldi_residual_tol=residual_tol,
-        )
+        sync_backend(backend)
         t0 = time_ns()
-        rt = VUMPSRuntime(network, chi, alg)
+        rt, _ = FastTeneT.vumps_step_Hermitian(rt, network, alg)
         sync_backend(backend)
-        t1 = time_ns()
-        _, err = FastTeneT.leading_boundary(rt, network, alg)
-        sync_backend(backend)
-        t2 = time_ns()
-        if rep > warmup
-            push!(init_seconds, (t1 - t0) / 1.0e9)
-            push!(iter_seconds, (t2 - t1) / 1.0e9)
-            push!(total_seconds, (t2 - t0) / 1.0e9)
-        end
-        last_err = Float64(real(err))
+        push!(step_seconds, (time_ns() - t0) / 1.0e9)
     end
 
     @printf(
-        "TENETC_2DISING backend=%s device=%s commit=current eltype=Float64 chi=%d beta=%.17g tol=%.3e maxiter=%d miniter=%d krylovdim=%d arnoldi_tol=%.3e residual_tol=%.3e warmup=%d repeats=%d median_init_seconds=%.9f median_iter_seconds=%.9f median_total_seconds=%.9f p25_total_seconds=%.9f p75_total_seconds=%.9f err=%.9e timestamp=%s\n",
+        "TENETC_VUMPS_STEP backend=%s device=%s commit=current eltype=Float64 chi=%d beta=%.17g step=vumps_step_Hermitian warmed=true warmup_steps=%d repeats=%d setup_seconds=%.9f median_step_seconds=%.9f p25_step_seconds=%.9f p75_step_seconds=%.9f tol=%.3e maxiter=%d miniter=%d krylovdim=%d arnoldi_tol=%.3e residual_tol=%.3e seed=%d timestamp=%s\n",
         backend,
         device,
         chi,
         beta,
+        warmup_steps,
+        repeats,
+        setup_seconds,
+        median_value(step_seconds),
+        percentile_value(step_seconds, 0.25),
+        percentile_value(step_seconds, 0.75),
         tol,
         maxiter,
         miniter,
         krylovdim,
         arnoldi_tol,
         residual_tol,
-        warmup,
-        repeats,
-        median_value(init_seconds),
-        median_value(iter_seconds),
-        median_value(total_seconds),
-        sort(total_seconds)[max(1, fld(length(total_seconds), 4))],
-        sort(total_seconds)[min(length(total_seconds), cld(3 * length(total_seconds), 4))],
-        last_err,
+        seed,
         string(now(UTC)),
     )
 end

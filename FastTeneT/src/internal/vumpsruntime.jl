@@ -242,6 +242,8 @@ end
 function vumps_step_Hermitian(rt::VUMPSRuntime, M::StructArray, alg::VUMPS)
     native = _native_ising_vumps_step_cpu(rt, M, alg)
     native !== nothing && return native
+    native = _native_ising_vumps_step_cuda(rt, M, alg)
+    native !== nothing && return native
 
     @unpack AL, C, AR, FL, FR = rt
     AC = ALCtoAC(AL,C)

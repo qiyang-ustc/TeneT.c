@@ -98,5 +98,6 @@ accept `--arnoldi-restarts n` to set that environment variable explicitly.
 ## Native Benchmark
 
 Use the release benchmark entrypoints under `benchmarks/tenet/` and the JobFiles
-under `benchmarks/jobfiles/`. They record the TeneT.jl master baseline, TeneT.c
-native timings, host metadata, tolerances, and run ids.
+under `benchmarks/jobfiles/`. They record warmed single VUMPS-step timings for
+TeneT.c and the pinned TeneT.jl iPEPS-unified baseline, with CPU results on
+Oblix and GPU results on Snellius H100.

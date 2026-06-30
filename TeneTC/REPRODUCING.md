@@ -1,28 +1,14 @@
 # Reproducing TeneT.c Results
 
-TeneT.c release benchmarks use a pinned TeneT.jl `master` checkout as the
-reference baseline and the current TeneT.c implementation as the native backend.
+Use jobctl from the repository root:
 
-Required metadata:
-
-- TeneT.c commit and dirty status.
-- TeneT.jl commit.
-- TeneT master compatibility patch checksum.
-- Julia version.
-- CPU/GPU model.
-- BLAS/CUDA/cuBLAS/cuTENSOR versions.
-- Threads and environment variables.
-- 2D Ising beta, `chi`, tolerance, VUMPS iteration limits, and seed.
-
-Recommended commands from the repository root:
-
-```sh
-julia --project=TeneTC -e 'using Pkg; Pkg.instantiate()'
-TENETC_RUN_FASTTENET_GATE=1 julia --project=TeneTC -e 'using Pkg; Pkg.test()'
-julia --project=TeneTC --startup-file=no benchmarks/tenet/run_tenetc.jl
-python3 benchmarks/tenet/compare_tenet_vs_tenetc.py master_summary.txt tenetc_summary.txt comparison.tsv
-python3 benchmarks/plots/plot_speedup.py benchmarks/results/tenetc_h100.tsv TeneTC/docs/figures/tenetc_speedup.svg
+```bash
+bash benchmarks/run_release_suite.sh
 ```
 
-Use the JobFiles in `benchmarks/jobfiles/` for audited H100 runs. Commit only
-compact summaries and host metadata from jobctl artifacts.
+The CPU job runs on Oblix with `--cpus 4 --mem 4G --time 02:00:00`.
+The GPU job runs on Snellius H100 with `--partition gpu_h100 --gres gpu:h100:1
+--cpus 16 --mem 180G --time 01:30:00`.
+
+Both jobs use `chi = 32,64,96,128,160,192,224,256`, 3 warmup steps, 11 timed
+repeats, `TENET_IPEPS_METHOD=krylovkit`, and `TENET_IPEPS_MODE=general`.

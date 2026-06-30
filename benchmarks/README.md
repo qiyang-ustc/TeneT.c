@@ -1,29 +1,27 @@
-# Release Benchmarks
+# TeneT.c Benchmarks
 
-This directory contains the release-facing benchmark suite for the two packages:
+The release benchmark suite measures one warmed VUMPS step. It does not measure
+solve-to-convergence runtime.
 
-- `KrylovKit.c` (`KrylovKitC`): KrylovKit.jl vs native Krylov backend.
-- `TeneT.c` (`TeneTC`): GPU TeneT.jl official `iPEPS-unified` real branch vs
-  GPU TeneT.c native backend; TeneT.jl `master` remains audit-only.
+Allowed comparisons:
 
-Small jobs are smoke tests only. Headline release claims must use the large
-defaults:
+- CPU on Oblix: TeneT.c/FastTeneT versus TeneT.jl iPEPS-unified, both `Float64`.
+- GPU on Snellius H100: TeneT.c/FastTeneT versus TeneT.jl iPEPS-unified, both
+  `CuArray{Float64}`.
 
-- GPU TeneT.c H100 native: `chi=32,48,64,96,128,192,256,384`, warmup 2, repeat 9.
-- GPU TeneT.jl `iPEPS-unified` real H100 baseline:
-  `chi=32,48,64,96,128`, warmup 2, repeat 9.
-- GPU TeneT.jl master H100 audit: `chi=32,48,64,96,128`, warmup 2, repeat 9;
-  these rows are scalar-mismatched and never headline speedup.
+Default sweep:
 
-Every run must preserve raw CSV/TSV data, host metadata, package commits, thread
-counts, BLAS/CUDA versions, tolerance, Krylov dimension, max iteration count,
-seed, residuals, and timing quantiles.
+- `TENET_BENCH_CHIS=32,64,96,128,160,192,224,256`
+- `TENET_BENCH_WARMUP=3`
+- `TENET_BENCH_REPEATS=11`
+- `TENET_BENCH_TOL=1e-10`
+- `TENET_BENCH_MAXITER=20`
+- `TENET_BENCH_MINITER=1`
+- `TENET_IPEPS_METHOD=krylovkit`
+- `TENET_IPEPS_MODE=general`
 
-Checked-in summaries under `benchmarks/results/` are compact release artifacts.
-Full jobctl run directories and Julia manifests are not committed.
+Run all official jobs through jobctl:
 
-Run the expanded release suite with:
-
-```sh
+```bash
 bash benchmarks/run_release_suite.sh
 ```

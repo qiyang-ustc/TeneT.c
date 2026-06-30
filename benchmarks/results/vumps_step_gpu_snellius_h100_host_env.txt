@@ -1,0 +1,21 @@
+name=release-tenet-vumps-snellius-h100
+machine=Snellius H100
+requested_mem=180G
+comparison=gpu_vs_gpu
+eltype=CuArray{Float64}
+repo=/home/qyang/source/release_bench_20260630/TeneT.c
+branch_repo=/home/qyang/source/release_bench_20260630/original_tenet_ipeps_unified
+date_utc=2026-06-30T10:19:37Z
+chis=32,64,96,128,160,192,224,256
+warmup=3
+repeats=11
+method=krylovkit
+mode=general
+cuda_module=2025 CUDA/12.8.0
+threads=JULIA:1 OPENBLAS:1 OMP:1 MKL:1
+julia version 1.11.4
+/sw/arch/RHEL9/EB_production/2025/software/CUDA/12.8.0/bin/nvcc
+nvcc: NVIDIA (R) Cuda compiler driver
+GPU 0: NVIDIA H100 (UUID: GPU-f0bd53ce-e750-04eb-cbe0-b2979f86c501)
+repo_commit=cd69db1aaeb44feb28cf142aafd9344ba603e82f
+branch_commit=a4bfff01bc898728b5b6af136f50e420aeeac5bc

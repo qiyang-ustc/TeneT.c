@@ -1,0 +1,17 @@
+name=release-tenet-vumps-oblix-cpu
+machine=Oblix
+requested_mem=4G
+comparison=cpu_vs_cpu
+eltype=Float64
+repo=/home/qyang1/projects/release_bench_20260630/TeneT.c
+branch_repo=/home/qyang1/projects/release_bench_20260630/original_tenet_ipeps_unified
+date_utc=2026-06-30T11:38:37Z
+chis=32,64,96,128,160,192,224,256
+warmup=3
+repeats=11
+method=krylovkit
+mode=general
+threads=JULIA:1 OPENBLAS:1 OMP:1 MKL:1
+julia version 1.11.7
+cd69db1aaeb44feb28cf142aafd9344ba603e82f
+a4bfff01bc898728b5b6af136f50e420aeeac5bc

@@ -1,0 +1,9 @@
+chi	ipeps_backend	tenetc_backend	ipeps_device	tenetc_device	ipeps_eltype	tenetc_eltype	ipeps_step	tenetc_step	ipeps_step_seconds	tenetc_step_seconds	ratio_tenetc_over_ipeps	ratio_ipeps_over_tenetc	ipeps_status	tenetc_status	comparison_status
+32	cpu	cpu	cpu	cpu	Float64	Float64	vumps_step	vumps_step_Hermitian	0.052604797	0.022146338	0.420994648	2.375327108	measured	measured	comparable_warmed_step
+64	cpu	cpu	cpu	cpu	Float64	Float64	vumps_step	vumps_step_Hermitian	0.191303534	0.096415274	0.503991076	1.984162115	measured	measured	comparable_warmed_step
+96	cpu	cpu	cpu	cpu	Float64	Float64	vumps_step	vumps_step_Hermitian	0.447620949	0.221739630	0.495373665	2.018678163	measured	measured	comparable_warmed_step
+128	cpu	cpu	cpu	cpu	Float64	Float64	vumps_step	vumps_step_Hermitian	0.896002418	0.518597074	0.578789815	1.727742910	measured	measured	comparable_warmed_step
+160	cpu	cpu	cpu	cpu	Float64	Float64	vumps_step	vumps_step_Hermitian	1.623470501	0.978202035	0.602537610	1.659647438	measured	measured	comparable_warmed_step
+192	cpu	cpu	cpu	cpu	Float64	Float64	vumps_step	vumps_step_Hermitian	3.233890218	1.810280691	0.559784213	1.786402647	measured	measured	comparable_warmed_step
+224	cpu	cpu	cpu	cpu	Float64	Float64	vumps_step	vumps_step_Hermitian	5.608386988	3.160311566	0.563497414	1.774631036	measured	measured	comparable_warmed_step
+256	cpu	cpu	cpu	cpu	Float64	Float64	vumps_step	vumps_step_Hermitian	7.930964029	4.434274699	0.559109168	1.788559475	measured	measured	comparable_warmed_step

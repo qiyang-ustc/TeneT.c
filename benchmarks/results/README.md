@@ -1,27 +1,12 @@
-# Benchmark Results
+# Release Results
 
-This directory stores compact benchmark summaries used by README figures.
+Official result artifacts are produced by jobctl. The Snellius H100 and Oblix
+CPU artifacts are present.
 
-Raw jobctl artifacts should normally stay in the job run directory or under
-`/tmp`. Commit only compact CSV/TSV summaries, host metadata, and generated
-figures needed for README claims.
+Expected artifacts:
 
-`metadata.toml` records the source and status for each committed artifact,
-including timeout/not-measured baselines. Do not promote a row to a headline
-claim unless the corresponding raw summary, host metadata, and source run ID are
-present here.
+- `vumps_step_gpu_snellius_h100.tsv`: completed, `run-0159d0af7c1a`.
+- `vumps_step_cpu_oblix.tsv`: completed, `run-4889332039c9`.
 
-Current GPU artifacts:
-
-- `tenet_ipeps_h100.tsv`: official TeneT.jl `iPEPS-unified` real CUDA baseline
-  against TeneT.c real CUDA, used for the headline GPU speedup figure.
-- `tenetc_h100.tsv`: TeneT.jl `master` ComplexF64 timing audit against TeneT.c
-  Float64, retained only as a scalar-mismatch audit.
-- `tenetc_native_h100.tsv`: TeneT.c native real CUDA scaling, including larger
-  `chi` values without implying a completed baseline.
-
-Regenerate the Markdown table summary with:
-
-```sh
-python3 benchmarks/results/render_release_tables.py
-```
+Each TSV must contain 8 `chi` rows, same-backend `Float64` timing, and no VUMPS
+error column.

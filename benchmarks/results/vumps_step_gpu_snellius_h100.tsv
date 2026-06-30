@@ -1,0 +1,9 @@
+chi	ipeps_backend	tenetc_backend	ipeps_device	tenetc_device	ipeps_eltype	tenetc_eltype	ipeps_step	tenetc_step	ipeps_step_seconds	tenetc_step_seconds	ratio_tenetc_over_ipeps	ratio_ipeps_over_tenetc	ipeps_status	tenetc_status	comparison_status
+32	cuda	cuda	NVIDIA_H100	NVIDIA_H100	Float64	Float64	vumps_step	vumps_step_Hermitian	1.186669883	0.065075064	0.054838388	18.235400936	measured	measured	comparable_warmed_step
+64	cuda	cuda	NVIDIA_H100	NVIDIA_H100	Float64	Float64	vumps_step	vumps_step_Hermitian	1.712562585	0.092685987	0.054121226	18.477038875	measured	measured	comparable_warmed_step
+96	cuda	cuda	NVIDIA_H100	NVIDIA_H100	Float64	Float64	vumps_step	vumps_step_Hermitian	1.852934092	0.103994673	0.056124324	17.817586599	measured	measured	comparable_warmed_step
+128	cuda	cuda	NVIDIA_H100	NVIDIA_H100	Float64	Float64	vumps_step	vumps_step_Hermitian	1.942017776	0.115394479	0.059419888	16.829382071	measured	measured	comparable_warmed_step
+160	cuda	cuda	NVIDIA_H100	NVIDIA_H100	Float64	Float64	vumps_step	vumps_step_Hermitian	2.068520672	0.120032489	0.058028180	17.233006574	measured	measured	comparable_warmed_step
+192	cuda	cuda	NVIDIA_H100	NVIDIA_H100	Float64	Float64	vumps_step	vumps_step_Hermitian	2.180636508	0.128959861	0.059138632	16.909420428	measured	measured	comparable_warmed_step
+224	cuda	cuda	NVIDIA_H100	NVIDIA_H100	Float64	Float64	vumps_step	vumps_step_Hermitian	2.950075681	0.163270719	0.055344587	18.068614502	measured	measured	comparable_warmed_step
+256	cuda	cuda	NVIDIA_H100	NVIDIA_H100	Float64	Float64	vumps_step	vumps_step_Hermitian	2.820926511	0.169262057	0.060002292	16.666029948	measured	measured	comparable_warmed_step

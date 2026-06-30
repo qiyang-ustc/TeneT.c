@@ -809,6 +809,71 @@ function _native_ising_vumps_step_cpu(rt::VUMPSRuntime, M::StructArray, alg::VUM
     return _native_wrap_ising_runtime(rt, result.AL, result.AR, result.C, result.FL, result.FR), result.err
 end
 
+function _native_ising_vumps_step_cuda(rt::VUMPSRuntime, M::StructArray, alg::VUMPS)
+    inputs = _native_single_site_cuda_ising_inputs(rt, M, alg)
+    inputs === nothing && return nothing
+    chi, phys, Mc, AL, AR, C, FL, FR = inputs
+    libpath = native_arnoldi_library(; target=:cuda)
+    max_k = _native_maxdim(alg, chi * phys * chi)
+    tenet_result = if alg.native_arnoldi_check_residual
+        _tenet_native_cuda_invoke(
+            :tenet_native_ising_vumps_step_checked_d_cuda,
+            Mc, AL, AR, C, FL, FR;
+            max_k,
+            breakdown_tol=alg.native_arnoldi_tol,
+            residual_tol=alg.native_arnoldi_residual_tol,
+            lib=libpath,
+        )
+    else
+        _tenet_native_cuda_invoke(
+            :tenet_native_ising_vumps_step_d_cuda,
+            Mc, AL, AR, C, FL, FR;
+            max_k,
+            breakdown_tol=alg.native_arnoldi_tol,
+            lib=libpath,
+        )
+    end
+    if tenet_result !== _TENET_NATIVE_UNAVAILABLE
+        CUDA.synchronize()
+        return _native_wrap_ising_runtime(
+            rt,
+            tenet_result.AL,
+            tenet_result.AR,
+            tenet_result.C,
+            tenet_result.FL,
+            tenet_result.FR,
+        ), tenet_result.err
+    end
+
+    handle = _native_arnoldi_handle(libpath)
+    err = Ref{Float64}(0.0)
+    status = if alg.native_arnoldi_check_residual
+        fptr = Libdl.dlsym(handle, :tenet_native_ising_vumps_step_checked_d_cuda)
+        _native_with_backend_device(:cuda, AL) do
+            ccall(fptr, Cint,
+                  (Int64, Int64, CUDA.CuPtr{Float64}, CUDA.CuPtr{Float64},
+                   CUDA.CuPtr{Float64}, CUDA.CuPtr{Float64}, CUDA.CuPtr{Float64},
+                   CUDA.CuPtr{Float64}, Int64, Float64, Float64, Ref{Float64}),
+                  Int64(chi), Int64(phys), Mc, AL, AR, C, FL, FR, Int64(max_k),
+                  Float64(alg.native_arnoldi_tol),
+                  Float64(alg.native_arnoldi_residual_tol), err)
+        end
+    else
+        fptr = Libdl.dlsym(handle, :tenet_native_ising_vumps_step_d_cuda)
+        _native_with_backend_device(:cuda, AL) do
+            ccall(fptr, Cint,
+                  (Int64, Int64, CUDA.CuPtr{Float64}, CUDA.CuPtr{Float64},
+                   CUDA.CuPtr{Float64}, CUDA.CuPtr{Float64}, CUDA.CuPtr{Float64},
+                   CUDA.CuPtr{Float64}, Int64, Float64, Ref{Float64}),
+                  Int64(chi), Int64(phys), Mc, AL, AR, C, FL, FR, Int64(max_k),
+                  Float64(alg.native_arnoldi_tol), err)
+        end
+    end
+    status == 0 || error("native CUDA Ising VUMPS step failed: " * _native_status_message(handle, status))
+    CUDA.synchronize()
+    return _native_wrap_ising_runtime(rt, AL, AR, C, FL, FR), err[]
+end
+
 function _native_ising_vumps_run_cpu(rt::VUMPSRuntime, M::StructArray, alg::VUMPS)
     alg.maxiter_ad == 0 || return nothing
     alg.verbosity <= 1 || return nothing

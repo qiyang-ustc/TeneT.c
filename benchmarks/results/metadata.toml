@@ -1,17 +1,35 @@
-generated_at_utc = "2026-06-30T00:14:45.793877+00:00"
-source_kind = "public_main_release_2026_06_30"
+schema = "tenet_warmed_vumps_step_v1"
+status = "complete"
+chi = "32,64,96,128,160,192,224,256"
+warmup = 3
+repeats = 11
+tol = "1e-10"
+maxiter = 20
+miniter = 1
+seed = 42
+comparison = "same_backend_float64"
 
-[tenetc_h100_comparison]
-run_id = "run-24c4e94078f0,run-a0e0f4fa3a8f,run-5a9253bd14e9,run-beb778b4ad87,run-046dc6fb654f"
-summary = "benchmarks/results/tenetc_h100.tsv"
-host_env = "benchmarks/results/tenetc_master_h100_host_env.txt"
+[cpu]
+machine = "Oblix"
+jobfile = "benchmarks/jobfiles/oblix_tenet_vumps_cpu.jobfile.yaml"
+artifact = "benchmarks/results/vumps_step_cpu_oblix.tsv"
+requested_cpus = 4
+requested_mem = "4G"
+requested_partition = "lerner"
+run_id = "run-4889332039c9"
+slurm_job_id = "320283"
+state = "completed"
+expectation_match = "usable"
+host_env = "benchmarks/results/vumps_step_cpu_oblix_host_env.txt"
 
-[tenetc_native_h100]
-run_id = "run-1723bfcdc707"
-summary = "benchmarks/results/tenetc_native_h100.tsv"
-host_env = "benchmarks/results/tenetc_native_h100_host_env.txt"
-
-[tenet_ipeps_h100]
-run_id = "run-64f60d92fdcb,run-1a5c19416816,run-d607011acacb,run-279bfc36172c,run-c2af6466687a"
-summary = "benchmarks/results/tenet_ipeps_h100.tsv"
-host_env = "benchmarks/results/tenet_ipeps_h100_host_env.txt"
+[gpu]
+machine = "Snellius H100"
+jobfile = "benchmarks/jobfiles/snellius_tenet_vumps_h100.jobfile.yaml"
+artifact = "benchmarks/results/vumps_step_gpu_snellius_h100.tsv"
+requested_cpus = 16
+requested_mem = "180G"
+run_id = "run-0159d0af7c1a"
+slurm_job_id = "24310807"
+state = "completed"
+expectation_match = "usable"
+host_env = "benchmarks/results/vumps_step_gpu_snellius_h100_host_env.txt"

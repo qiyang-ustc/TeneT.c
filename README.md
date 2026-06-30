@@ -1,120 +1,16 @@
 # TeneT.c
 
-TeneT.c is a benchmark-first native backend for selected 2D Ising
-TeneT-style tensor-network workloads. It depends on KrylovKit.c for the native
-Krylov backend. This repository is not a complete replacement for TeneT.jl and
-should not be cited as the scientific source.
+This release benchmark uses warmed single VUMPS-step timing only. It compares
+TeneT.c/FastTeneT with the pinned TeneT.jl iPEPS-unified baseline on the same
+backend and the same real `Float64` arithmetic.
 
-```julia
-using Pkg
-Pkg.add(url="https://github.com/qiyang-ustc/TeneT.c", subdir="TeneTC")
-```
+Official CPU results are run on Oblix with `--cpus 4 --mem 4G`. Official GPU
+results are run on Snellius H100 with one H100 allocation and `--mem 180G`.
+CPU and GPU results are reported as separate tables.
 
-## Acknowledgement
+The release sweep is `chi = 32,64,96,128,160,192,224,256`, with 3 warmup steps
+and 11 timed repeats. VUMPS convergence error is not a reported benchmark
+quantity for this suite.
 
-TeneT.jl is the scientific and API inspiration for this work. We are grateful to
-Xingyu Zhang and the TeneT.jl contributors for the original implementation.
-Please cite and acknowledge TeneT.jl by Xingyu Zhang and contributors when this
-backend is useful in scientific work. Please also cite and acknowledge
-KrylovKit.jl by Jutho Haegeman and contributors for the Krylov solver design.
-
-Do not cite TeneT.c or KrylovKit.c as the scientific source; these repositories
-are engineering backends and benchmark artifacts.
-
-## What Is Measured
-
-- 2D classical Ising boundary VUMPS.
-- GPU TeneT.c native `CuArray{Float64}` path on H100.
-- GPU TeneT.jl official `iPEPS-unified` branch real `CuArray{Float64}` path
-  on H100 for the fair GPU-vs-GPU baseline.
-- GPU TeneT.jl `master` timing using `CuArray{ComplexF64}` at a pinned commit
-  with a documented CUDA compatibility patch, retained only as an audit row.
-- Native runtime scaling at larger `chi` when the TeneT.jl baseline is not
-  available.
-
-`TeneTC` depends on `KrylovKitC` from
-`https://github.com/qiyang-ustc/KrylovKit.c`.
-
-## Correctness Before Speed
-
-The release gate includes 2D Ising tensor construction, Onsager exact
-references, CPU smoke tests, CUDA smoke tests when CUDA is available, native
-path versus reference path parity, and checks that production defaults remain
-real `Float64`.
-
-```sh
-TENETC_RUN_RELEASE_GATE=1 julia --project=TeneTC -e 'using Pkg; Pkg.test()'
-```
-
-Correctness artifacts report the VUMPS error returned by the solver and keep
-the same `beta`, `tol`, `maxiter`, and seed across TeneT.jl and TeneT.c
-comparisons.
-
-## Baseline Policy
-
-The fair GPU-vs-GPU reference baseline is the official TeneT.jl
-`iPEPS-unified` branch at pinned commit
-`a4bfff01bc898728b5b6af136f50e420aeeac5bc`, using real `Float64` CUDA arrays.
-
-The pinned TeneT.jl `master` commit
-`b9ac7919a96e930639935c9370ae568139bc8747` is also retained as a historical
-timing audit with `tenet_master_cuda_compat.patch`. That patch is an
-ecosystem-version adapter for current CUDA/Julia packages, not a criticism of
-the original project. Because this master path uses `ComplexF64`, it is not
-used for headline speedup claims against the real TeneT.c path.
-
-Speedup is shown only for `chi` values where a real `Float64` TeneT.jl
-baseline completed. Timeout, not-measured, scalar-mismatched, or audit-only
-rows are reported separately and are not converted into speedup claims.
-
-## Performance Evidence
-
-All figures are generated from committed TSV artifacts:
-
-```sh
-python3 benchmarks/plots/plot_release_figures.py
-```
-
-The headline GPU comparison is real CUDA versus real CUDA: official TeneT.jl
-`iPEPS-unified` (`CuArray{Float64}`) against TeneT.c (`CuArray{Float64}`), both
-on Snellius H100, 2D Ising, warmup 2, repeat 9. On the completed
-`chi=32,48,64,96,128` range, the measured speedup is 6.40x to 12.09x. Larger
-TeneT.c native sizes are shown as scaling only until a completed TeneT.jl real
-baseline exists.
-
-| chi | TeneT.jl real GPU median (s) | TeneT.c real GPU median (s) | speedup | TeneT.jl error | TeneT.c error |
-| ---: | ---: | ---: | ---: | ---: | ---: |
-| 32 | 16.987717 | 1.404854 | 12.09x | 2.02e-05 | 3.36e-05 |
-| 48 | 17.306478 | 1.719294 | 10.07x | 6.76e-06 | 2.75e-05 |
-| 64 | 17.734378 | 2.109899 | 8.41x | 1.53e-05 | 1.33e-05 |
-| 96 | 17.928481 | 2.491735 | 7.20x | 1.22e-05 | 7.17e-06 |
-| 128 | 18.124031 | 2.830716 | 6.40x | 5.32e-06 | 6.68e-06 |
-
-![Real GPU speedup](TeneTC/docs/figures/tenetc_real_speedup.svg)
-
-![Native runtime scaling](TeneTC/docs/figures/tenetc_native_scaling.svg)
-
-![Native correctness trend](TeneTC/docs/figures/tenetc_error_vs_chi.svg)
-
-The TeneT.jl `master` CUDA audit remains committed, but it is explicitly not a
-speedup claim because that path uses `ComplexF64` while TeneT.c uses
-`Float64`. Detailed tables, run IDs, limitations, and reproduction commands are
-in `TeneTC/README.md`.
-
-## Expanded Release Sweep
-
-```sh
-bash benchmarks/run_release_suite.sh
-```
-
-Measured matrix:
-
-- GPU TeneT.c H100 native: `chi=32,48,64,96,128,192,256,384`, warmup 2, repeat 9.
-- GPU TeneT.jl `iPEPS-unified` real H100 baseline:
-  `chi=32,48,64,96,128`, warmup 2, repeat 9.
-- GPU TeneT.jl master H100 timing audit: completed `chi=32,48,64,96,128`,
-  warmup 2, repeat 9; `chi=192,256,384` are not measured and do not appear as
-  speedup.
-
-No speedup claim is made for scalar-mismatched, missing, timed-out, or
-smoke-test rows.
+Run definitions live under `benchmarks/jobfiles/`. Completed official artifacts
+are recorded under `benchmarks/results/`.
