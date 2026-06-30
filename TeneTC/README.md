@@ -77,6 +77,11 @@ Speedup is shown only for `chi` values where the TeneT.jl master baseline
 completed under the same benchmark settings. Timeout or not-measured rows are
 visible and are not converted into speedup claims.
 
+The comparison is a specialized TeneT.c native backend against the pinned
+TeneT.jl master runtime using CUDA arrays. It is not a pure GPU kernel-level
+comparison and should not be read as a claim that all TeneT.jl workloads see the
+same acceleration.
+
 ## Performance Evidence
 
 Figures are generated from committed TSV artifacts under `benchmarks/results/`:
@@ -147,5 +152,7 @@ from speedup headlines until a completed baseline artifact exists.
 - Completed-baseline speedup is limited to `chi=32,48,64,96,128`; larger
   master baselines remain not measured.
 - Native-only scaling is not a speedup claim.
+- Completed-baseline speedup is an end-to-end specialized-backend comparison,
+  not an apples-to-apples microbenchmark of identical GPU kernels.
 - The CUDA compatibility patch is only for benchmarking the pinned TeneT.jl
   baseline on the current CUDA/Julia environment.

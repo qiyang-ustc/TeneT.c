@@ -71,6 +71,11 @@ Current public artifacts include 8 native TeneT.c H100 points and 5 completed
 TeneT.jl master baseline points. Larger master baselines are explicitly marked
 not measured rather than converted into speedup claims.
 
+The completed-baseline speedup compares a specialized TeneT.c native backend
+against the pinned TeneT.jl master runtime using CUDA arrays. It is an
+end-to-end specialized-backend comparison, not a pure GPU kernel-level
+comparison and not a claim about all TeneT.jl workloads.
+
 ![Completed baseline speedup](TeneTC/docs/figures/tenetc_completed_speedup.svg)
 
 ![Native runtime scaling](TeneTC/docs/figures/tenetc_native_scaling.svg)
